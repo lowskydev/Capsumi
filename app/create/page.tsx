@@ -7,7 +7,7 @@ export default function CreatePage() {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <main className="container max-w-4xl py-8 px-6">
+      <main className="max-w-4xl py-8 px-6">
         {/* Header */}
         <div className="mb-8">
           <Link

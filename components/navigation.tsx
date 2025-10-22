@@ -31,7 +31,7 @@ export function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
@@ -134,7 +134,7 @@ export function Navigation() {
       {/* Bottom Navigation - Mobile Only, only show when authenticated */}
       {user && (
         <div className="md:hidden border-t border-border/40">
-          <div className="container flex items-center justify-around px-4 py-2">
+          <div className="flex items-center justify-around px-4 py-2">
             <Link
               href="/dashboard"
               className={cn(
