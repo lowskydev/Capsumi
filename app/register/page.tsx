@@ -46,11 +46,13 @@ export default function RegisterPage() {
         {/* Register Card */}
         <div className="bg-card rounded-3xl p-8 border border-border/50 hover-lift">
           {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
-              <Clock className="h-8 w-8 text-primary-foreground" />
+            <div className="flex justify-center mb-8">
+            <img
+                src="/capsumi-logo-color.PNG"
+                alt="Capsumi"
+                className="h-16 w-16 object-contain"
+            />
             </div>
-          </div>
 
           <h1 className="text-3xl font-bold text-center mb-2">Create Your Account</h1>
           <p className="text-center text-muted-foreground mb-8">Start preserving your memories today</p>

@@ -15,7 +15,6 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Capsumi - Digital Memory Capsules",
   description: "Preserve and organize your digital memories into time capsules",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

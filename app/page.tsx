@@ -9,10 +9,12 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className=" w-full flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
-              <Clock className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <img
+              src="/capsumi-logo-color.PNG"
+              alt="Capsumi"
+              className="h-10 w-10 object-contain"
+            />
+            <span className="text-xl font-semibold">
               Capsumi
             </span>
           </Link>
@@ -210,13 +212,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border/40 py-12">
         <div className="px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary">
-                <Clock className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-semibold">Capsumi</span>
-            </div>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <p className="text-sm text-muted-foreground">© 2025 Capsumi. All rights reserved.</p>
           </div>
         </div>

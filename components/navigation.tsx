@@ -34,12 +34,14 @@ export function Navigation() {
       <div className="flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary">
-            <Clock className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Capsumi
-          </span>
+            <img
+                src="/capsumi-logo-color.PNG"
+                alt="Capsumi"
+                className="h-10 w-10 object-contain"
+            />
+            <span className="text-xl font-semibold">
+                Capsumi
+            </span>
         </Link>
 
         {/* Search Bar - Hidden on mobile, only show when authenticated */}
