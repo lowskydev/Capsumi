@@ -105,8 +105,8 @@ export default function LandingPage() {
 
             <div className="bg-card rounded-2xl p-6 border border-border/50">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 shrink-0">
-                  <FileText className="h-6 w-6 text-accent-foreground" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10 shrink-0">
+                  <FileText className="h-6 w-6 text-secondary" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Personal Messages</h3>

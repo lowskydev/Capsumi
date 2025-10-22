@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+[![React](https://img.shields.io/badge/React-19.1-61DAFB?style=for-the-badge&labelColor=black&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.1-FF3855?style=for-the-badge&labelColor=black&logo=vite&logoColor=E63946)](https://vitejs.dev/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-38B2AC?style=for-the-badge&labelColor=black&logo=tailwind-css&logoColor=38B2AC)](https://tailwindcss.com/)
 
-First, run the development server:
+<div align="center">
+  <img src="/public/capsumi-logo-color.PNG" alt="Capsumi Logo" width="140" height="140">
+</div>
+
+# Capsumi
+
+</div align="center">
+
+**Capsumi** is a **frontend-only web application** built as part of the **PMI (Person–Machine Interaction / Human–Computer Interaction)** course during an **Erasmus semester in Portugal**.
+It is the **only frontend project** made for this course in Portugal.
+
+## Links
+
+- **Live Application:** [capsumi.app](https://capsumi.app)
+- **Project Page (course reports & documentation):** [capsumi.info](https://capsumi.info)
+
+## Project Overview
+
+### Problem Description
+
+People create and store an enormous amount of digital data — photos, videos, documents, and more.
+Unfortunately, these memories often get lost or buried under countless files.
+
+**Capsumi** was created to help people **preserve and categorise their digital memories** in an organised, personal, and meaningful way.
+
+A **capsule** is a collection of digital data — including photos, videos, music, and files — locked until a specified *open date*.
+Users can create personal capsules or shared ones with friends and family.
+Each capsule can be customised with **themes, colours, and notes**, making it a personal experience that adds an element of **anticipation**.
+
+## Project Goals
+
+- Create time capsules with photos, videos, music, and files
+- Enable system-wide themed capsules for each user
+- Set future unlock dates (monthly, yearly, or custom)
+- View active capsules in a dashboard and unlocked capsules in a timeline
+- Share capsules with friends or publicly
+- Focus on user memories, emotions, and social connections
+
+Additional features may include:
+
+- Interactive themes
+- 3D animations
+- Countdown animations
+- Badges for engagement
+
+## Target Users
+
+Capsumi is made **for everyone** who wants to **store photos, videos, music, or files** in a meaningful and memorable way.
+Our main audience includes **young adults and students**, but the app is open to all who value digital memories and emotional design.
+
+## The Story Behind the Name
+
+The name **Capsumi** comes from the word **"capsule"** — a vessel that holds memories, messages, and artifacts that tell a story over time.
+The project builds on this idea, focusing on collecting and sharing **meaningful memories** that reflect personal experiences.
+
+Coincidentally, **“Capsumi”** sounds similar to **“Capsuni”**, the Romanian word for **strawberries**.
+During our Erasmus semester in Portugal, we met amazing **Romanian flatmates**, and this connection inspired our choice of the **strawberry** as our logo.
+
+The strawberry became our own little capsule — a symbol of friendship and shared memories.
+Capsumi represents preserving moments worth keeping and revisiting while staying rooted in the connections and stories that shape them.
+
+## Tech Stack
+
+- **React** (frontend framework)
+- **Vite** (build tool)
+- **JavaScript / TypeScript**
+- **CSS / TailwindCSS**
+
+> This project is **frontend-only**, built for the **PMI course**.
+
+## Setup Instructions
+
+To run the project locally:
 
 ```bash
+# Clone the repository
+git clone https://github.com/lowskydev/capsumi.git
+
+# Navigate into the folder
+cd capsumi
+
+# Install dependencies
+npm install
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Authors
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Wiktor Szydłowski
+- Valerii Matviiv
+- Markiian Voloshyn
+- Nuro
