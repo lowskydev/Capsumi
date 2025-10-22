@@ -10,7 +10,7 @@ interface CapsuleCardProps {
   createdDate: Date
   isLocked: boolean
   previewImage?: string
-  contentTypes: ("text" | "image" | "audio")[]
+  contentTypes: readonly ("text" | "image" | "audio")[]
   tags?: string[]
 }
 
