@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { Navigation } from "@/components/navigation"
 import { SidebarFilters } from "@/components/sidebar-filters"
@@ -16,11 +17,16 @@ export default function DashboardPage() {
       ...c,
       unlockDate: new Date(c.unlockDate),
       createdDate: new Date(c.createdDate),
-      contentTypes: c.contentTypes || [], // default empty array
-      tags: c.tags || [],
     }))
     setCapsules(stored)
   }, [])
+
+  const handleDelete = (id: string) => {
+    const updated = capsules.filter((c) => c.id !== id)
+    setCapsules(updated)
+    // Update localStorage directly
+    localStorage.setItem("capsules", JSON.stringify(updated))
+  }
 
   return (
     <div className="min-h-screen page-transition">
@@ -57,7 +63,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {capsules.map((c) => (
-                  <CapsuleCard key={c.id} {...c} />
+                  <CapsuleCard key={c.id} {...c} onDelete={handleDelete} />
                 ))}
               </div>
             )}

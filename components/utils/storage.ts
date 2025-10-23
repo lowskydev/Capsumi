@@ -30,3 +30,9 @@ export function saveCapsule(capsule: Capsule) {
 export function clearCapsules() {
   localStorage.removeItem("capsules")
 }
+
+export const deleteCapsule = (id: string) => {
+  const capsules = getCapsules()
+  const filtered = capsules.filter(c => c.id !== id)
+  localStorage.setItem("capsules", JSON.stringify(filtered))
+}

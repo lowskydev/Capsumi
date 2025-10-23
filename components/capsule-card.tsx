@@ -1,4 +1,6 @@
-import { Calendar, Lock, Unlock, ImageIcon, FileText, Music } from "lucide-react"
+"use client"
+
+import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -10,8 +12,9 @@ interface CapsuleCardProps {
   createdDate: Date
   isLocked: boolean
   previewImage?: string
-  contentTypes?: ("text" | "image" | "audio")[]
+  contentTypes: readonly ("text" | "image" | "audio")[]
   tags?: string[]
+  onDelete?: (id: string) => void
 }
 
 export function CapsuleCard({
@@ -21,15 +24,30 @@ export function CapsuleCard({
   createdDate,
   isLocked,
   previewImage,
-  contentTypes = [], // default to empty array
+  contentTypes = [],
   tags = [],
+  onDelete,
 }: CapsuleCardProps) {
   const daysUntilUnlock = Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
 
   return (
-    <Link href={`/capsule/${id}`}>
+    <Link href={`/capsule/${id}`} className="relative block">
       <Card className="group overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer">
-        {/* Preview Image or Placeholder */}
+        {/* Delete Button */}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              onDelete(id)
+            }}
+            className="absolute top-2 right-2 z-10 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-80 hover:opacity-100 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Preview Image */}
         <div className="relative h-48 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
           {previewImage ? (
             <img src={previewImage} alt={title} className="w-full h-full object-cover" />
@@ -50,7 +68,7 @@ export function CapsuleCard({
             </div>
           </div>
 
-          {/* Days Until Unlock Badge */}
+          {/* Days Until Unlock */}
           {isLocked && daysUntilUnlock > 0 && (
             <div className="absolute bottom-3 left-3">
               <Badge variant="secondary" className="backdrop-blur-sm bg-background/80">
