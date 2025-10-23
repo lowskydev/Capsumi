@@ -40,13 +40,13 @@ export default function CapsuleDetailPage({ params }: { params: { id: string } }
   const capsule = mockCapsule // In real app: fetch by params.id
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="container max-w-4xl py-8 px-6">
+      <main className="w-full max-w-4xl mx-auto py-8 px-6">
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />

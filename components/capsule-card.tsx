@@ -10,7 +10,7 @@ interface CapsuleCardProps {
   createdDate: Date
   isLocked: boolean
   previewImage?: string
-  contentTypes: readonly ("text" | "image" | "audio")[]
+  contentTypes?: ("text" | "image" | "audio")[]
   tags?: string[]
 }
 
@@ -21,7 +21,7 @@ export function CapsuleCard({
   createdDate,
   isLocked,
   previewImage,
-  contentTypes,
+  contentTypes = [], // default to empty array
   tags = [],
 }: CapsuleCardProps) {
   const daysUntilUnlock = Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
@@ -32,7 +32,7 @@ export function CapsuleCard({
         {/* Preview Image or Placeholder */}
         <div className="relative h-48 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
           {previewImage ? (
-            <img src={previewImage || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
+            <img src={previewImage} alt={title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-6xl opacity-20">📦</div>

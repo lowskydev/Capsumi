@@ -97,4 +97,4 @@ npm run dev
 - Wiktor Szydłowski
 - Valerii Matviiv
 - Markiian Voloshyn
-- Nuro
+- Nuro Pequeno
