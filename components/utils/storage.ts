@@ -36,3 +36,9 @@ export const deleteCapsule = (id: string) => {
   const filtered = capsules.filter(c => c.id !== id)
   localStorage.setItem("capsules", JSON.stringify(filtered))
 }
+
+// AQUI
+
+export function saveAllCapsules(capsules: Capsule[]) {
+  localStorage.setItem("capsules", JSON.stringify(capsules))
+}

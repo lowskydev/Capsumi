@@ -1,15 +1,16 @@
 "use client"
-
 import { Button } from "@/components/ui/button"
 import { Clock, Grid3x3, Lock, Share2, Archive } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
 
-type FilterType = "all" | "active" | "unlocked" | "shared" | "archived"
+export type FilterType = "all" | "active" | "unlocked" | "shared" | "archived"
 
-export function SidebarFilters() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all")
+interface SidebarFiltersProps {
+  activeFilter: FilterType
+  onFilterChange: (filter: FilterType) => void
+}
 
+export function SidebarFilters({ activeFilter, onFilterChange }: SidebarFiltersProps) {
   const filters = [
     { id: "all" as FilterType, label: "All Capsules", icon: Grid3x3 },
     { id: "active" as FilterType, label: "Active", icon: Clock },
@@ -19,22 +20,27 @@ export function SidebarFilters() {
   ]
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col gap-2 border-r border-border/40 bg-card p-4">
-      <h2 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Filters</h2>
-      <div className="flex flex-col gap-1">
+    <aside className="hidden lg:flex flex-col w-64 h-screen bg-gradient-to-b from-primary/10 via-secondary/5 to-accent/10 p-6 border-r border-border/40 gap-6 shadow-lg">
+      <h2 className="text-lg font-bold text-primary mb-4">Filters</h2>
+      <div className="mb-4 text-sm">
+        <p>💡 Tip: Use filters to find your capsules quickly!</p>
+      </div>
+      <div className="flex flex-col gap-3">
         {filters.map((filter) => {
           const Icon = filter.icon
           return (
             <Button
               key={filter.id}
-              variant={activeFilter === filter.id ? "secondary" : "ghost"}
+              variant="ghost"
+              onClick={() => onFilterChange(filter.id)}
               className={cn(
-                "justify-start gap-3 rounded-2xl",
-                activeFilter === filter.id && "bg-primary/10 text-primary hover:bg-primary/20",
+                "justify-start gap-3 rounded-2xl px-4 py-3 text-base font-medium transition-all",
+                activeFilter === filter.id
+                  ? "bg-primary/20 text-primary shadow-md scale-105 hover:bg-primary/30"
+                  : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
               )}
-              onClick={() => setActiveFilter(filter.id)}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-5 w-5" />
               {filter.label}
             </Button>
           )

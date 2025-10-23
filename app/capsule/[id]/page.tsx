@@ -10,10 +10,25 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Trash2, Lock, Unlock } from "lucide-react"
 import Link from "next/link"
-import { getCapsules, Capsule } from "@/components/utils/storage"
+import { deleteCapsule, getCapsules, saveCapsule } from "@/components/utils/storage"
+
+// ...
+
+const handleDelete = () => {
+  if (!capsule) return
+
+  // Remove capsule from the list
+  const updated = getCapsules().filter(c => c.id !== capsule.id)
+
+  // Save each remaining capsule individually using saveCapsule
+  updated.forEach(c => saveCapsule(c))
+
+  // Redirect back to dashboard
+  router.push("/dashboard")
+}
 
 export default function CapsuleDetailPage() {
-  const params = useParams() // ✅ get dynamic params properly
+  const params = useParams()
   const [capsule, setCapsule] = useState<Capsule | null>(null)
   const router = useRouter()
 
@@ -27,6 +42,19 @@ export default function CapsuleDetailPage() {
     const found = allCapsules.find(c => c.id === params.id)
     setCapsule(found || null)
   }, [params?.id])
+  
+  const handleDelete = () => {
+    if (!capsule) return
+
+    // Remove capsule from the list
+    const updated = getCapsules().filter(c => c.id !== capsule.id)
+
+    // Save each remaining capsule individually using saveCapsule
+    updated.forEach(c => saveCapsule(c))
+
+    // Redirect back to dashboard
+    router.push("/dashboard")
+  }
 
   if (!capsule) {
     return (
@@ -79,7 +107,12 @@ export default function CapsuleDetailPage() {
             {/* Action Buttons */}
             <div className="flex gap-2">
               <ShareDialog capsuleId={capsule.id} capsuleTitle={capsule.title} />
-              <Button variant="outline" size="icon" className="bg-transparent text-destructive hover:text-destructive">
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-transparent text-destructive hover:text-destructive"
+                onClick={handleDelete}
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -88,7 +121,12 @@ export default function CapsuleDetailPage() {
 
         {/* Content */}
         {capsule.isLocked ? (
-          <LockedCapsuleView unlockDate={capsule.unlockDate} previewImage={capsule.previewImage} />
+          <LockedCapsuleView
+            id={capsule.id} // Pass ID
+            unlockDate={capsule.unlockDate}
+            previewImage={capsule.previewImage}
+            onDelete={handleDelete} // Optional: show delete button inside LockedCapsuleView
+          />
         ) : (
           <UnlockedCapsuleView
             textContent={capsule.textContent}

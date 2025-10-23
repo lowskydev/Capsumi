@@ -5,9 +5,9 @@ import { Navigation } from "@/components/navigation"
 import { SidebarFilters } from "@/components/sidebar-filters"
 import { CapsuleCard } from "@/components/capsule-card"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { getCapsules, Capsule } from "@/components/utils/storage"
+import { getCapsules, saveCapsule } from "@/components/utils/storage"
 
 export default function DashboardPage() {
   const [capsules, setCapsules] = useState<Capsule[]>([])
@@ -21,11 +21,11 @@ export default function DashboardPage() {
     setCapsules(stored)
   }, [])
 
-  const handleDelete = (id: string) => {
-    const updated = capsules.filter((c) => c.id !== id)
-    setCapsules(updated)
-    // Update localStorage directly
-    localStorage.setItem("capsules", JSON.stringify(updated))
+  const handleClearAll = () => {
+    if (confirm("Are you sure you want to delete ALL capsules?")) {
+      localStorage.removeItem("capsules") // clear from storage
+      setCapsules([]) // clear state
+    }
   }
 
   return (
@@ -40,11 +40,22 @@ export default function DashboardPage() {
                 <h1 className="text-4xl font-bold mb-2 text-balance">Your Memory Capsules</h1>
                 <p className="text-muted-foreground text-lg">Preserve your precious moments for the future</p>
               </div>
-              <Link href="/create">
-                <Button size="lg" className="gap-2 rounded-2xl hover-lift">
-                  <Plus className="w-5 h-5" /> Create Capsule
+              <div className="flex gap-2">
+                <Link href="/create">
+                  <Button size="lg" className="gap-2 rounded-2xl hover-lift">
+                    <Plus className="w-5 h-5" /> Create Capsule
+                  </Button>
+                </Link>
+                {/* Clear All Capsules Button */}
+                <Button
+                  onClick={handleClearAll}
+                  size="lg"
+                  variant="destructive"
+                  className="gap-2 rounded-2xl hover-lift"
+                >
+                  <Trash2 className="w-5 h-5" /> Clear All
                 </Button>
-              </Link>
+              </div>
             </div>
 
             {capsules.length === 0 ? (
@@ -63,7 +74,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {capsules.map((c) => (
-                  <CapsuleCard key={c.id} {...c} onDelete={handleDelete} />
+                  <CapsuleCard key={c.id} {...c} />
                 ))}
               </div>
             )}
