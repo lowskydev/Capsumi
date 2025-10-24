@@ -2,8 +2,8 @@ export interface Capsule {
   id: string
   title: string
   description?: string
-  unlockDate: string
-  createdDate: string
+  unlockDate: Date
+  createdDate: Date
   isLocked: boolean
   previewImage?: string
   textContent?: string

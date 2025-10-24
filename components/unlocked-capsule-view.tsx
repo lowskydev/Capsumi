@@ -1,13 +1,16 @@
+"use client"
+
 import { ImageIcon, FileText, Music, Calendar, Tag } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { motion } from "framer-motion"
 
 interface UnlockedCapsuleViewProps {
   textContent?: string
   images?: string[]
   audioUrl?: string
-  createdDate: Date
-  unlockDate: Date
+  createdDate: Date | string
+  unlockDate: Date | string
   tags?: string[]
 }
 
@@ -19,6 +22,9 @@ export function UnlockedCapsuleView({
   unlockDate,
   tags = [],
 }: UnlockedCapsuleViewProps) {
+  const created = new Date(createdDate)
+  const unlocked = new Date(unlockDate)
+
   return (
     <div className="space-y-6">
       {/* Timeline Info */}
@@ -27,12 +33,12 @@ export function UnlockedCapsuleView({
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-accent-foreground" />
             <span className="text-muted-foreground">Created:</span>
-            <span className="font-medium">{createdDate.toLocaleDateString()}</span>
+            <span className="font-medium">{created.toLocaleDateString()}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-accent-foreground" />
             <span className="text-muted-foreground">Unlocked:</span>
-            <span className="font-medium">{unlockDate.toLocaleDateString()}</span>
+            <span className="font-medium">{unlocked.toLocaleDateString()}</span>
           </div>
         </div>
       </Card>
@@ -57,7 +63,9 @@ export function UnlockedCapsuleView({
             <h3 className="text-xl font-semibold">Your Message</h3>
           </div>
           <div className="prose prose-lg max-w-none">
-            <p className="text-foreground whitespace-pre-wrap text-pretty leading-relaxed">{textContent}</p>
+            <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+              {textContent}
+            </p>
           </div>
         </Card>
       )}
@@ -67,17 +75,26 @@ export function UnlockedCapsuleView({
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <ImageIcon className="w-5 h-5 text-primary" />
-            <h3 className="text-xl font-semibold">Photos ({images.length})</h3>
+            <h3 className="text-xl font-semibold">
+              Photos ({images.length})
+            </h3>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {images.map((image, index) => (
-              <div key={index} className="rounded-xl overflow-hidden group cursor-pointer">
+              <motion.div
+                key={index}
+                className="rounded-xl overflow-hidden group cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
                 <img
                   src={image || "/placeholder.svg"}
-                  alt={`Memory ${index + 1}`}
+                  alt={`Memory photo ${index + 1}`}
                   className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+                  loading="lazy"
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
         </Card>
@@ -90,7 +107,11 @@ export function UnlockedCapsuleView({
             <Music className="w-5 h-5 text-primary" />
             <h3 className="text-xl font-semibold">Audio Message</h3>
           </div>
-          <audio controls className="w-full">
+          <audio
+            controls
+            className="w-full"
+            aria-label="Audio message playback"
+          >
             <source src={audioUrl} type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
