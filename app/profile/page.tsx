@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Camera, Package, Lock, Unlock, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-context"
 import { useState } from "react"
 
-function ProfilePage() {
+export default function ProfilePage() {
   const { user, updateUser } = useAuth()
   const [name, setName] = useState(user?.name || "")
-  const [email, setEmail] = useState(user?.email || "")
+  const [email, setEmail] = useState(user?.email || "")  
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [reminderNotifications, setReminderNotifications] = useState(true)
+  const [publicProfile, setPublicProfile] = useState(false)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +31,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <main className="container max-w-4xl py-8 px-6">
+      <main className="container max-w-4xl py-8 px-6 items-center mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -51,14 +53,14 @@ function ProfilePage() {
               <div className="relative group">
                 <Avatar className="w-32 h-32">
                   <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="text-3xl">
+                  <AvatarFallback className="text-3xl bg-primary/10 text-primary">
                     {user.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
-                <button className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Camera className="w-6 h-6 text-white" />
                 </button>
               </div>
@@ -79,20 +81,25 @@ function ProfilePage() {
           <Card className="p-6">
             <h3 className="text-xl font-semibold mb-4">Your Statistics</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-primary/10 text-center">
+              {/* Total Capsules */}
+              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
                 <Package className="w-8 h-8 text-primary mx-auto mb-2" />
                 <div className="text-3xl font-bold mb-1 text-primary">{user.stats.totalCapsules}</div>
-                <div className="text-sm text-muted-foreground">Total Capsules</div>
+                <div className="text-sm font-medium text-foreground/70">Total Capsules</div>
               </div>
-              <div className="p-4 rounded-xl bg-secondary/10 text-center">
+
+              {/* Locked */}
+              <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-center">
                 <Lock className="w-8 h-8 text-secondary mx-auto mb-2" />
                 <div className="text-3xl font-bold mb-1 text-secondary">{user.stats.lockedCapsules}</div>
-                <div className="text-sm text-muted-foreground">Locked</div>
+                <div className="text-sm font-medium text-foreground/70">Locked</div>
               </div>
-              <div className="p-4 rounded-xl bg-accent/10 text-center">
+
+              {/* Unlocked */}
+              <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 text-center">
                 <Unlock className="w-8 h-8 text-accent-foreground mx-auto mb-2" />
                 <div className="text-3xl font-bold mb-1 text-accent-foreground">{user.stats.unlockedCapsules}</div>
-                <div className="text-sm text-muted-foreground">Unlocked</div>
+                <div className="text-sm font-medium text-foreground/70">Unlocked</div>
               </div>
             </div>
           </Card>
@@ -133,45 +140,79 @@ function ProfilePage() {
             </form>
           </Card>
 
-
           {/* Preferences */}
           <Card className="p-6">
-            <h3 className="text-lg md:text-xl font-semibold mb-6">Preferences</h3>
+            <h3 className="text-xl font-semibold mb-6">Preferences</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              {/* Email Notifications Toggle */}
+              <button
+                onClick={() => setEmailNotifications(!emailNotifications)}
+                className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/5 transition-colors text-left"
+              >
                 <div>
-                  <div className="font-medium">Email Notifications</div>
+                  <div className="font-medium text-foreground">Email Notifications</div>
                   <div className="text-sm text-muted-foreground">Receive notifications when capsules unlock</div>
                 </div>
-                <Badge variant="secondary">Enabled</Badge>
-              </div>
-              <div className="flex items-center justify-between">
+                <div className={`
+                  px-3 py-1 rounded-full text-xs font-semibold transition-colors
+                  ${emailNotifications 
+                    ? 'bg-secondary text-secondary-foreground' 
+                    : 'bg-muted text-muted-foreground'}
+                `}>
+                  {emailNotifications ? 'Enabled' : 'Disabled'}
+                </div>
+              </button>
+
+              {/* Reminder Notifications Toggle */}
+              <button
+                onClick={() => setReminderNotifications(!reminderNotifications)}
+                className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/5 transition-colors text-left"
+              >
                 <div>
-                  <div className="font-medium">Reminder Notifications</div>
+                  <div className="font-medium text-foreground">Reminder Notifications</div>
                   <div className="text-sm text-muted-foreground">Get reminders before capsules unlock</div>
                 </div>
-                <Badge variant="secondary">Enabled</Badge>
-              </div>
-              <div className="flex items-center justify-between">
+                <div className={`
+                  px-3 py-1 rounded-full text-xs font-semibold transition-colors
+                  ${reminderNotifications 
+                    ? 'bg-secondary text-secondary-foreground' 
+                    : 'bg-muted text-muted-foreground'}
+                `}>
+                  {reminderNotifications ? 'Enabled' : 'Disabled'}
+                </div>
+              </button>
+
+              {/* Public Profile Toggle */}
+              <button
+                onClick={() => setPublicProfile(!publicProfile)}
+                className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/5 transition-colors text-left"
+              >
                 <div>
-                  <div className="font-medium">Public Profile</div>
+                  <div className="font-medium text-foreground">Public Profile</div>
                   <div className="text-sm text-muted-foreground">Allow others to view your shared capsules</div>
                 </div>
-                <Badge variant="outline">Disabled</Badge>
-              </div>
+                <div className={`
+                  px-3 py-1 rounded-full text-xs font-semibold transition-colors
+                  ${publicProfile 
+                    ? 'bg-secondary text-secondary-foreground' 
+                    : 'bg-muted text-muted-foreground'}
+                `}>
+                  {publicProfile ? 'Enabled' : 'Disabled'}
+                </div>
+              </button>
             </div>
           </Card>
 
           {/* Danger Zone */}
-          <Card className="p-6 border-destructive/50">
-            <h3 className="text-lg md:text-xl font-semibold mb-4 text-destructive">Danger Zone</h3>
+          <Card className="p-6 border-destructive/30 bg-destructive/5">
+            <h3 className="text-xl font-semibold mb-4 text-destructive">Danger Zone</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/20 bg-background">
                 <div>
-                  <div className="font-medium">Delete Account</div>
+                  <div className="font-medium text-foreground">Delete Account</div>
                   <div className="text-sm text-muted-foreground">Permanently delete your account and all capsules</div>
                 </div>
-                <Button variant="destructive" size="sm" onClick={() => console.log("Delete account")}>
+                <Button variant="destructive" size="sm">
                   Delete
                 </Button>
               </div>
@@ -182,5 +223,3 @@ function ProfilePage() {
     </div>
   )
 }
-
-export default ProfilePage;
