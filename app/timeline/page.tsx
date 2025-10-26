@@ -1,5 +1,5 @@
 import { Navigation } from "@/components/navigation"
-import { SidebarFilters } from "@/components/sidebar-filters"
+import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { TimelineItem } from "@/components/timeline-item"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -79,8 +79,8 @@ export default function TimelinePage() {
     <div className="min-h-screen">
       <Navigation />
       <div className="flex">
-        <SidebarFilters />
-        <main className="flex-1 p-6">
+        <DashboardSidebar />
+        <main className="flex-1 ml-64 p-6">
           <div className="container max-w-5xl">
             {/* Header */}
             <div className="mb-10 flex items-start justify-between">

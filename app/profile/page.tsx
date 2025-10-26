@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeft, Camera, Package, Lock, Unlock, Calendar } from "lucide-react"
+import { ArrowLeft, Camera, Package, Lock, Unlock, Calendar, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-context"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, logout } = useAuth()
+  const router = useRouter()
   const [name, setName] = useState(user?.name || "")
-  const [email, setEmail] = useState(user?.email || "")  
+  const [email, setEmail] = useState(user?.email || "")
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [reminderNotifications, setReminderNotifications] = useState(true)
   const [publicProfile, setPublicProfile] = useState(false)
@@ -22,6 +24,11 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     await updateUser({ name, email })
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
   }
 
   if (!user) {
@@ -110,21 +117,21 @@ export default function ProfilePage() {
             <form onSubmit={handleSave} className="space-y-5">
               <div>
                 <Label htmlFor="name">Full Name</Label>
-                <Input 
-                  id="name" 
+                <Input
+                  id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-2" 
+                  className="mt-2"
                 />
               </div>
               <div>
                 <Label htmlFor="email">Email Address</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
+                <Input
+                  id="email"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2" 
+                  className="mt-2"
                 />
               </div>
               <div>
@@ -155,8 +162,8 @@ export default function ProfilePage() {
                 </div>
                 <div className={`
                   px-3 py-1 rounded-full text-xs font-semibold transition-colors
-                  ${emailNotifications 
-                    ? 'bg-secondary text-secondary-foreground' 
+                  ${emailNotifications
+                    ? 'bg-secondary text-secondary-foreground'
                     : 'bg-muted text-muted-foreground'}
                 `}>
                   {emailNotifications ? 'Enabled' : 'Disabled'}
@@ -174,8 +181,8 @@ export default function ProfilePage() {
                 </div>
                 <div className={`
                   px-3 py-1 rounded-full text-xs font-semibold transition-colors
-                  ${reminderNotifications 
-                    ? 'bg-secondary text-secondary-foreground' 
+                  ${reminderNotifications
+                    ? 'bg-secondary text-secondary-foreground'
                     : 'bg-muted text-muted-foreground'}
                 `}>
                   {reminderNotifications ? 'Enabled' : 'Disabled'}
@@ -193,8 +200,8 @@ export default function ProfilePage() {
                 </div>
                 <div className={`
                   px-3 py-1 rounded-full text-xs font-semibold transition-colors
-                  ${publicProfile 
-                    ? 'bg-secondary text-secondary-foreground' 
+                  ${publicProfile
+                    ? 'bg-secondary text-secondary-foreground'
                     : 'bg-muted text-muted-foreground'}
                 `}>
                   {publicProfile ? 'Enabled' : 'Disabled'}
@@ -216,6 +223,20 @@ export default function ProfilePage() {
                   Delete
                 </Button>
               </div>
+            </div>
+          </Card>
+
+          {/* Log Out */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-foreground">Sign Out</div>
+                <div className="text-sm text-muted-foreground">Log out of your account</div>
+              </div>
+              <Button variant="outline" onClick={handleLogout} className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Log Out
+              </Button>
             </div>
           </Card>
         </div>
