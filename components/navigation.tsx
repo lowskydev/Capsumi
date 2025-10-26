@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface NavigationProps {
-  searchQuery: string
-  setSearchQuery: (value: string) => void
+  searchQuery?: string
+  setSearchQuery?: (value: string) => void
 }
 
 export function Navigation({ searchQuery, setSearchQuery }: NavigationProps) {
@@ -51,7 +51,7 @@ export function Navigation({ searchQuery, setSearchQuery }: NavigationProps) {
                 type="search"
                 placeholder="Search capsules..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery?.(e.target.value)}
                 className="pl-10 rounded-2xl border border-pink-500/40 shadow-sm focus:ring-2 focus:ring-pink-500 w-full"
               />
             </div>
