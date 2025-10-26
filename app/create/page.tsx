@@ -11,11 +11,11 @@ export default function CreatePage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/dashboard"
+            href="/mycapsules"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            Back to My Capsules
           </Link>
 
           <h1 className="text-4xl font-bold mb-2 text-balance">Create Time Capsule</h1>

@@ -41,15 +41,15 @@ export default function CapsuleDetailPage() {
 
     CapsuleStorage.deleteCapsule(capsule.id)
     refreshStats()
-    router.push("/dashboard")
+    router.push("/mycapsules")
   }
 
   if (!capsule) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground text-lg">Capsule not found.</p>
-        <Button onClick={() => router.push("/dashboard")} className="ml-4">
-          Back to Dashboard
+        <Button onClick={() => router.push("/mycapsules")} className="ml-4">
+          Back to My Capsules
         </Button>
       </div>
     )
@@ -62,11 +62,11 @@ export default function CapsuleDetailPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/dashboard"
+            href="/mycapsules"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            Back to My Capsules
           </Link>
 
           <div className="flex items-start justify-between gap-4 mb-4">
