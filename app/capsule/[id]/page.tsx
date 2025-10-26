@@ -10,49 +10,37 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Trash2, Lock, Unlock } from "lucide-react"
 import Link from "next/link"
-import { deleteCapsule, getCapsules, saveCapsule } from "@/components/utils/storage"
-
-// ...
-
-const handleDelete = () => {
-  if (!capsule) return
-
-  // Remove capsule from the list
-  const updated = getCapsules().filter(c => c.id !== capsule.id)
-
-  // Save each remaining capsule individually using saveCapsule
-  updated.forEach(c => saveCapsule(c))
-
-  // Redirect back to dashboard
-  router.push("/dashboard")
-}
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { useAuth } from "@/components/auth-context"
 
 export default function CapsuleDetailPage() {
   const params = useParams()
-  const [capsule, setCapsule] = useState<Capsule | null>(null)
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id
+  const [capsule, setCapsule] = useState<Capsule | null>(() => (id ? CapsuleStorage.getCapsuleById(id) : null))
+  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
+  const { refreshStats } = useAuth()
 
   useEffect(() => {
-    if (!params?.id) return
-    const allCapsules = getCapsules().map(c => ({
-      ...c,
-      unlockDate: new Date(c.unlockDate),
-      createdDate: new Date(c.createdDate),
-    }))
-    const found = allCapsules.find(c => c.id === params.id)
-    setCapsule(found || null)
-  }, [params?.id])
+    if (!id) return
+
+    const handleUpdate = () => {
+      const updated = CapsuleStorage.getCapsuleById(id)
+      setCapsule(updated || null)
+    }
+
+    // Ensure current state is in sync
+    handleUpdate()
+
+    window.addEventListener('capsulesUpdated', handleUpdate)
+    return () => window.removeEventListener('capsulesUpdated', handleUpdate)
+  }, [id])
   
   const handleDelete = () => {
     if (!capsule) return
 
-    // Remove capsule from the list
-    const updated = getCapsules().filter(c => c.id !== capsule.id)
-
-    // Save each remaining capsule individually using saveCapsule
-    updated.forEach(c => saveCapsule(c))
-
-    // Redirect back to dashboard
+    CapsuleStorage.deleteCapsule(capsule.id)
+    refreshStats()
     router.push("/dashboard")
   }
 
@@ -69,7 +57,7 @@ export default function CapsuleDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Navigation searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <main className="w-full max-w-4xl mx-auto py-8 px-6">
         {/* Header */}
         <div className="mb-8">
@@ -122,10 +110,8 @@ export default function CapsuleDetailPage() {
         {/* Content */}
         {capsule.isLocked ? (
           <LockedCapsuleView
-            id={capsule.id} // Pass ID
             unlockDate={capsule.unlockDate}
             previewImage={capsule.previewImage}
-            onDelete={handleDelete} // Optional: show delete button inside LockedCapsuleView
           />
         ) : (
           <UnlockedCapsuleView

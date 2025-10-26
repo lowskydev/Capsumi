@@ -6,27 +6,30 @@ import { Button } from "@/components/ui/button"
 import { CapsuleCard } from "@/components/capsule-card"
 import { SidebarFilters, FilterType } from "@/components/sidebar-filters"
 import { Plus, Trash2 } from "lucide-react"
-import { getCapsules, Capsule } from "@/components/utils/storage"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { Navigation } from "@/components/navigation"
+import { useAuth } from "@/components/auth-context"
 
 export default function DashboardPage() {
-  const [capsules, setCapsules] = useState<Capsule[]>([])
+  const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
   const [activeFilter, setActiveFilter] = useState<FilterType>("all")
   const [searchQuery, setSearchQuery] = useState("")
 
+  const { refreshStats } = useAuth()
+
+  // Listen for updates to capsules (dispatched by CapsuleStorage)
   useEffect(() => {
-    const stored = getCapsules().map((c) => ({
-      ...c,
-      unlockDate: new Date(c.unlockDate),
-      createdDate: new Date(c.createdDate),
-    }))
-    setCapsules(stored)
+    const handleUpdate = () => setCapsules(CapsuleStorage.getAllCapsules())
+    window.addEventListener('capsulesUpdated', handleUpdate)
+    return () => window.removeEventListener('capsulesUpdated', handleUpdate)
   }, [])
 
   const handleClearAll = () => {
     if (confirm("Are you sure you want to delete ALL capsules?")) {
-      localStorage.removeItem("capsules")
+      CapsuleStorage.clearAllCapsules()
       setCapsules([])
+      // let auth context recompute stats
+      refreshStats()
     }
   }
 
@@ -35,8 +38,7 @@ export default function DashboardPage() {
   }
 
   const filteredCapsules = useMemo(() => {
-    const now = new Date()
-    let result = [...capsules]
+  let result = [...capsules]
 
     // Sidebar filter
     switch (activeFilter) {
@@ -47,10 +49,12 @@ export default function DashboardPage() {
         result = result.filter((c) => c.isLocked === false)
         break
       case "shared":
-        result = result.filter((c) => c.shared === true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        result = result.filter((c) => (c as any).shared === true)
         break
       case "archived":
-        result = result.filter((c) => c.archived === true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        result = result.filter((c) => (c as any).archived === true)
         break
     }
 

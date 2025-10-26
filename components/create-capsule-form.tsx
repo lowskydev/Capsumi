@@ -1,22 +1,23 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus } from "lucide-react"
-
-import { saveCapsule, Capsule } from "@/components/utils/storage"
+import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { useAuth } from "@/components/auth-context"
 
 export function CreateCapsuleForm() {
   const router = useRouter()
-
+  const { refreshStats } = useAuth()
+  
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [unlockDate, setUnlockDate] = useState("")
@@ -24,8 +25,10 @@ export function CreateCapsuleForm() {
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
   const [images, setImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [audio, setAudio] = useState<File | null>(null)
-  const [isLocked, setIsLocked] = useState(true) // NEW: state for locked/unlocked
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [unlockImmediately, setUnlockImmediately] = useState(false)
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -40,7 +43,12 @@ export function CreateCapsuleForm() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages([...images, ...Array.from(e.target.files)])
+      const newFiles = Array.from(e.target.files)
+      setImages([...images, ...newFiles])
+      
+      // Create preview URLs
+      const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file))
+      setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls])
     }
   }
 
@@ -51,33 +59,83 @@ export function CreateCapsuleForm() {
   }
 
   const handleRemoveImage = (index: number) => {
+    // Revoke the old URL to prevent memory leaks
+    URL.revokeObjectURL(imagePreviewUrls[index])
+    
     setImages(images.filter((_, i) => i !== index))
+    setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
 
-    const newCapsule: Capsule = {
-      id: Date.now().toString(),
-      title,
-      description,
-      unlockDate: new Date(unlockDate),
-      createdDate: new Date(),
-      isLocked: isLocked, // NEW: use checkbox value
-      previewImage: images[0] ? URL.createObjectURL(images[0]) : "/placeholder.svg",
-      textContent,
-      images: images.map((file) => URL.createObjectURL(file)),
-      audioUrl: audio ? URL.createObjectURL(audio) : "",
-      tags,
-      contentTypes: [
-        textContent ? "text" : null,
-        images.length ? "image" : null,
-        audio ? "audio" : null,
-      ].filter(Boolean) as ("text" | "image" | "audio")[],
+    try {
+      // Determine content types
+      const contentTypes: ("text" | "image" | "audio")[] = []
+      if (textContent) contentTypes.push("text")
+      if (images.length > 0) contentTypes.push("image")
+      if (audio) contentTypes.push("audio")
+
+      // For images, we'll store the data URLs (base64) in localStorage
+      // In a real app, you'd upload to a server and store the URLs
+      const imageUrls = await Promise.all(
+        images.map(img => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.readAsDataURL(img)
+          })
+        })
+      )
+
+      // For audio, convert to data URL
+      let audioUrl: string | undefined
+      if (audio) {
+        audioUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(audio)
+        })
+      }
+
+      // Determine if locked based on unlock date or checkbox
+      const unlock = new Date(unlockDate)
+      const isLocked = unlockImmediately ? false : unlock > new Date()
+
+      // Create capsule object
+      const newCapsule: Capsule = {
+        id: `capsule_${Date.now()}`,
+        title,
+        description: description || undefined,
+        unlockDate: unlock,
+        createdDate: new Date(),
+        isLocked,
+        previewImage: imageUrls[0] || undefined,
+        textContent: textContent || undefined,
+        images: imageUrls.length > 0 ? imageUrls : undefined,
+        audioUrl,
+        contentTypes: contentTypes as readonly ("text" | "image" | "audio")[],
+        tags: tags.length > 0 ? tags : undefined,
+      }
+
+      // Save to storage
+      CapsuleStorage.saveCapsule(newCapsule)
+
+      // Refresh user stats
+      refreshStats()
+
+      // Clean up preview URLs
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
+
+      // Redirect to the new capsule
+      router.push(`/capsule/${newCapsule.id}`)
+    } catch (error) {
+      console.error("Error creating capsule:", error)
+      alert("Failed to create capsule. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
-
-    saveCapsule(newCapsule)
-    router.push("/dashboard")
   }
 
   return (
@@ -91,7 +149,9 @@ export function CreateCapsuleForm() {
 
         <div className="space-y-5">
           <div>
-            <Label htmlFor="title" className="text-base">Capsule Title *</Label>
+            <Label htmlFor="title" className="text-base">
+              Capsule Title *
+            </Label>
             <Input
               id="title"
               value={title}
@@ -103,7 +163,9 @@ export function CreateCapsuleForm() {
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-base">Description</Label>
+            <Label htmlFor="description" className="text-base">
+              Description
+            </Label>
             <Textarea
               id="description"
               value={description}
@@ -133,22 +195,27 @@ export function CreateCapsuleForm() {
             </p>
           </div>
 
-          {/* Locked/Unlocked Toggle */}
-          <div className="flex items-center gap-2 mt-2">
+          {/* Unlock Immediately Checkbox */}
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-accent/5">
             <input
-              id="isLocked"
               type="checkbox"
-              checked={isLocked}
-              onChange={(e) => setIsLocked(e.target.checked)}
-              className="h-4 w-4 accent-primary"
+              id="unlockImmediately"
+              checked={unlockImmediately}
+              onChange={(e) => setUnlockImmediately(e.target.checked)}
+              className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
             />
-            <Label htmlFor="isLocked" className="text-base cursor-pointer">
-              Locked? (unchecked = immediately unlocked)
+            <Label htmlFor="unlockImmediately" className="text-sm cursor-pointer">
+              <span className="font-medium">Unlock immediately</span>
+              <span className="block text-muted-foreground mt-0.5">
+                Create this capsule in an unlocked state (bypass the unlock date)
+              </span>
             </Label>
           </div>
 
           <div>
-            <Label htmlFor="tags" className="text-base">Tags</Label>
+            <Label htmlFor="tags" className="text-base">
+              Tags
+            </Label>
             <div className="flex gap-2 mt-2">
               <Input
                 id="tags"
@@ -163,10 +230,10 @@ export function CreateCapsuleForm() {
                 placeholder="Add tags (press Enter)"
               />
               <Button type="button" onClick={handleAddTag} variant="outline" className="gap-2 bg-transparent">
-                <Plus className="w-4 h-4" /> Add
+                <Plus className="w-4 h-4" />
+                Add
               </Button>
             </div>
-
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {tags.map((tag) => (
@@ -195,7 +262,9 @@ export function CreateCapsuleForm() {
         </h2>
 
         <div>
-          <Label htmlFor="textContent" className="text-base">Your Message</Label>
+          <Label htmlFor="textContent" className="text-base">
+            Your Message
+          </Label>
           <Textarea
             id="textContent"
             value={textContent}
@@ -218,7 +287,9 @@ export function CreateCapsuleForm() {
         </h2>
 
         <div>
-          <Label htmlFor="images" className="text-base">Upload Photos</Label>
+          <Label htmlFor="images" className="text-base">
+            Upload Photos
+          </Label>
           <div className="mt-2">
             <label
               htmlFor="images"
@@ -231,12 +302,12 @@ export function CreateCapsuleForm() {
             <input id="images" type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
           </div>
 
-          {images.length > 0 && (
+          {imagePreviewUrls.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              {images.map((image, index) => (
+              {imagePreviewUrls.map((url, index) => (
                 <div key={index} className="relative group">
                   <img
-                    src={URL.createObjectURL(image)}
+                    src={url}
                     alt={`Upload ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
                   />
@@ -262,7 +333,9 @@ export function CreateCapsuleForm() {
         </h2>
 
         <div>
-          <Label htmlFor="audio" className="text-base">Upload Audio Message</Label>
+          <Label htmlFor="audio" className="text-base">
+            Upload Audio Message
+          </Label>
           <div className="mt-2">
             <label
               htmlFor="audio"
@@ -295,11 +368,32 @@ export function CreateCapsuleForm() {
 
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">
-        <Button type="button" variant="outline" onClick={() => router.push("/dashboard")} size="lg">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => router.push("/dashboard")} 
+          size="lg"
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit" size="lg" className="gap-2">
-          <Plus className="w-5 h-5" /> Create Capsule
+        <Button 
+          type="submit" 
+          size="lg" 
+          className="gap-2"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-5 h-5" />
+              Create Capsule
+            </>
+          )}
         </Button>
       </div>
     </form>

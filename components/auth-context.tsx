@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { CapsuleStorage } from "@/lib/capsule-storage"
 
 interface User {
   id: string
@@ -22,6 +23,7 @@ interface AuthContextType {
   logout: () => void
   isAuthenticated: boolean
   updateUser: (updates: Partial<User>) => Promise<void>
+  refreshStats: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -32,6 +34,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Function to get current stats from capsules
+  const getCurrentStats = () => {
+    return CapsuleStorage.getStats()
+  }
+
+  // Function to refresh user stats
+  const refreshStats = () => {
+    if (!user) return
+    
+    const stats = getCurrentStats()
+    const updatedUser = { ...user, stats }
+    setUser(updatedUser)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
+  }
+
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = () => {
@@ -41,6 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userData = JSON.parse(stored)
           // Convert joinDate string back to Date
           userData.joinDate = new Date(userData.joinDate)
+          
+          // Always get fresh stats from capsules
+          userData.stats = getCurrentStats()
+          
           setUser(userData)
         }
       } catch (error) {
@@ -52,6 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUser()
   }, [])
 
+  // Listen for capsule changes and update stats automatically
+  useEffect(() => {
+    const handleCapsulesUpdate = () => {
+      refreshStats()
+    }
+
+    window.addEventListener('capsulesUpdated', handleCapsulesUpdate)
+    return () => window.removeEventListener('capsulesUpdated', handleCapsulesUpdate)
+  }, [user])
+
   // Listen for storage changes across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -59,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (e.newValue) {
           const userData = JSON.parse(e.newValue)
           userData.joinDate = new Date(userData.joinDate)
+          userData.stats = getCurrentStats()
           setUser(userData)
         } else {
           setUser(null)
@@ -74,17 +106,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     
+    // Get real stats from stored capsules
+    const stats = getCurrentStats()
+    
     const userData: User = {
       id: "1",
       name: "Alex Morgan",
       email,
       avatar: "/diverse-user-avatars.png",
       joinDate: new Date(),
-      stats: {
-        totalCapsules: 12,
-        lockedCapsules: 8,
-        unlockedCapsules: 4,
-      }
+      stats,
     }
     
     setUser(userData)
@@ -141,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         updateUser,
+        refreshStats,
         isAuthenticated: !!user,
       }}
     >
