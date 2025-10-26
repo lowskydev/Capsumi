@@ -210,6 +210,20 @@ export default function ProfilePage() {
             </div>
           </Card>
 
+          {/* Log Out */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-foreground">Sign Out</div>
+                <div className="text-sm text-muted-foreground">Log out of your account</div>
+              </div>
+              <Button variant="outline" onClick={handleLogout} className="gap-2">
+                <LogOut className="w-4 h-4" />
+                Log Out
+              </Button>
+            </div>
+          </Card>
+
           {/* Danger Zone */}
           <Card className="p-6 border-destructive/30 bg-destructive/5">
             <h3 className="text-xl font-semibold mb-4 text-destructive">Danger Zone</h3>
@@ -223,20 +237,6 @@ export default function ProfilePage() {
                   Delete
                 </Button>
               </div>
-            </div>
-          </Card>
-
-          {/* Log Out */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-foreground">Sign Out</div>
-                <div className="text-sm text-muted-foreground">Log out of your account</div>
-              </div>
-              <Button variant="outline" onClick={handleLogout} className="gap-2">
-                <LogOut className="w-4 h-4" />
-                Log Out
-              </Button>
             </div>
           </Card>
         </div>
