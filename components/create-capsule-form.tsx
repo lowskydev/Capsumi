@@ -13,6 +13,7 @@ import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle } fr
 import { useRouter } from "next/navigation"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
+import { DatePicker } from "@/components/date-picker"
 
 export function CreateCapsuleForm() {
   const router = useRouter()
@@ -20,7 +21,7 @@ export function CreateCapsuleForm() {
   
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [unlockDate, setUnlockDate] = useState("")
+  const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined) // Changed type
   const [textContent, setTextContent] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
@@ -46,7 +47,6 @@ export function CreateCapsuleForm() {
       const newFiles = Array.from(e.target.files)
       setImages([...images, ...newFiles])
       
-      // Create preview URLs
       const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file))
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls])
     }
@@ -59,7 +59,6 @@ export function CreateCapsuleForm() {
   }
 
   const handleRemoveImage = (index: number) => {
-    // Revoke the old URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index])
     
     setImages(images.filter((_, i) => i !== index))
@@ -68,17 +67,21 @@ export function CreateCapsuleForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate unlock date is selected
+    if (!unlockDate) {
+      alert("Please select an unlock date")
+      return
+    }
+    
     setIsSubmitting(true)
 
     try {
-      // Determine content types
       const contentTypes: ("text" | "image" | "audio")[] = []
       if (textContent) contentTypes.push("text")
       if (images.length > 0) contentTypes.push("image")
       if (audio) contentTypes.push("audio")
 
-      // For images, we'll store the data URLs (base64) in localStorage
-      // In a real app, you'd upload to a server and store the URLs
       const imageUrls = await Promise.all(
         images.map(img => {
           return new Promise<string>((resolve) => {
@@ -89,7 +92,6 @@ export function CreateCapsuleForm() {
         })
       )
 
-      // For audio, convert to data URL
       let audioUrl: string | undefined
       if (audio) {
         audioUrl = await new Promise<string>((resolve) => {
@@ -99,16 +101,13 @@ export function CreateCapsuleForm() {
         })
       }
 
-      // Determine if locked based on unlock date or checkbox
-      const unlock = new Date(unlockDate)
-      const isLocked = unlockImmediately ? false : unlock > new Date()
+      const isLocked = unlockImmediately ? false : unlockDate > new Date()
 
-      // Create capsule object
       const newCapsule: Capsule = {
         id: `capsule_${Date.now()}`,
         title,
         description: description || undefined,
-        unlockDate: unlock,
+        unlockDate,
         createdDate: new Date(),
         isLocked,
         previewImage: imageUrls[0] || undefined,
@@ -119,16 +118,9 @@ export function CreateCapsuleForm() {
         tags: tags.length > 0 ? tags : undefined,
       }
 
-      // Save to storage
       CapsuleStorage.saveCapsule(newCapsule)
-
-      // Refresh user stats
       refreshStats()
-
-      // Clean up preview URLs
       imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
-
-      // Redirect to the new capsule
       router.push(`/capsule/${newCapsule.id}`)
     } catch (error) {
       console.error("Error creating capsule:", error)
@@ -140,7 +132,6 @@ export function CreateCapsuleForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Basic Information */}
       <Card className="p-6">
         <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
           <FileText className="w-6 h-6 text-primary" />
@@ -177,25 +168,23 @@ export function CreateCapsuleForm() {
           </div>
 
           <div>
-            <Label htmlFor="unlockDate" className="text-base flex items-center gap-2">
+            <Label className="text-base flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Unlock Date *
             </Label>
-            <Input
-              id="unlockDate"
-              type="date"
-              value={unlockDate}
-              onChange={(e) => setUnlockDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              required
-              className="mt-2"
-            />
+            <div className="mt-2">
+              <DatePicker
+                date={unlockDate}
+                onDateChange={setUnlockDate}
+                placeholder="Choose when to unlock this capsule"
+                disablePastDates={true}
+              />
+            </div>
             <p className="text-sm text-muted-foreground mt-1.5">
               Choose when this capsule will be unlocked and revealed
             </p>
           </div>
 
-          {/* Unlock Immediately Checkbox */}
           <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-accent/5">
             <input
               type="checkbox"
