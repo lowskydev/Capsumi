@@ -6,8 +6,8 @@ import Image from "next/image"
 export type FilterType = "all" | "active" | "unlocked" | "shared" | "archived"
 
 interface SidebarFiltersProps {
-  activeFilter: FilterType
-  onFilterChange: (filter: FilterType) => void
+  activeFilter?: FilterType
+  onFilterChange?: (filter: FilterType) => void
   logoSrc?: string
   title?: string
 }
@@ -50,7 +50,7 @@ export function SidebarFilters({
           return (
             <button
               key={filter.id}
-              onClick={() => onFilterChange(filter.id)}
+              onClick={() => onFilterChange?.(filter.id)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all backdrop-blur-lg border border-pink-500/40 text-center",
                 activeFilter === filter.id
