@@ -1,3 +1,7 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { Navigation } from "@/components/navigation"
 import { LockedCapsuleView } from "@/components/locked-capsule-view"
 import { UnlockedCapsuleView } from "@/components/unlocked-capsule-view"
@@ -6,47 +10,59 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Trash2, Lock, Unlock } from "lucide-react"
 import Link from "next/link"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { useAuth } from "@/components/auth-context"
 
-// Mock data - in a real app, this would come from a database
-const mockCapsule = {
-  id: "1",
-  title: "Summer Vacation Memories 2024",
-  description: "Beach trips, family dinners, and unforgettable summer adventures.",
-  unlockDate: new Date("2025-06-15"),
-  createdDate: new Date("2024-06-15"),
-  isLocked: true,
-  previewImage: "/summer-beach-vacation.png",
-  textContent: `Dear Future Me,
+export default function CapsuleDetailPage() {
+  const params = useParams()
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id
+  const [capsule, setCapsule] = useState<Capsule | null>(() => (id ? CapsuleStorage.getCapsuleById(id) : null))
+  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter()
+  const { refreshStats } = useAuth()
 
-This summer was absolutely incredible! We spent two weeks at the beach house, and every day felt like a gift. The kids learned to surf, we had those amazing sunset barbecues, and I finally finished reading that book I've been putting off for years.
+  useEffect(() => {
+    if (!id) return
 
-Remember how nervous you were about taking time off work? It was so worth it. These moments with the family are what life is really about.
+    const handleUpdate = () => {
+      const updated = CapsuleStorage.getCapsuleById(id)
+      setCapsule(updated || null)
+    }
 
-I hope when you read this next year, you've continued to prioritize what matters most.
+    // Ensure current state is in sync
+    handleUpdate()
 
-With love from the past,
-You`,
-  images: [
-    "/summer-beach-vacation.png",
-    "/family-beach-sunset.jpg",
-    "/kids-surfing-ocean.jpg",
-    "/beach-house-barbecue.jpg",
-  ],
-  audioUrl: "/placeholder-audio.mp3",
-  tags: ["vacation", "family", "summer", "beach"],
-}
+    window.addEventListener('capsulesUpdated', handleUpdate)
+    return () => window.removeEventListener('capsulesUpdated', handleUpdate)
+  }, [id])
+  
+  const handleDelete = () => {
+    if (!capsule) return
 
-export default function CapsuleDetailPage({ params }: { params: { id: string } }) {
-  const capsule = mockCapsule // In real app: fetch by params.id
+    CapsuleStorage.deleteCapsule(capsule.id)
+    refreshStats()
+    router.push("/dashboard")
+  }
+
+  if (!capsule) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground text-lg">Capsule not found.</p>
+        <Button onClick={() => router.push("/dashboard")} className="ml-4">
+          Back to Dashboard
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen">
-      <Navigation />
-      <main className="container max-w-4xl py-8 px-6">
+    <div className="min-h-screen bg-background">
+      <Navigation searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <main className="w-full max-w-4xl mx-auto py-8 px-6">
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -79,7 +95,12 @@ export default function CapsuleDetailPage({ params }: { params: { id: string } }
             {/* Action Buttons */}
             <div className="flex gap-2">
               <ShareDialog capsuleId={capsule.id} capsuleTitle={capsule.title} />
-              <Button variant="outline" size="icon" className="bg-transparent text-destructive hover:text-destructive">
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-transparent text-destructive hover:text-destructive"
+                onClick={handleDelete}
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -88,7 +109,10 @@ export default function CapsuleDetailPage({ params }: { params: { id: string } }
 
         {/* Content */}
         {capsule.isLocked ? (
-          <LockedCapsuleView unlockDate={capsule.unlockDate} previewImage={capsule.previewImage} />
+          <LockedCapsuleView
+            unlockDate={capsule.unlockDate}
+            previewImage={capsule.previewImage}
+          />
         ) : (
           <UnlockedCapsuleView
             textContent={capsule.textContent}

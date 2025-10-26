@@ -1,15 +1,23 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
 import { Clock, Grid3x3, Lock, Share2, Archive } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import Image from "next/image"
 
-type FilterType = "all" | "active" | "unlocked" | "shared" | "archived"
+export type FilterType = "all" | "active" | "unlocked" | "shared" | "archived"
 
-export function SidebarFilters() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all")
+interface SidebarFiltersProps {
+  activeFilter?: FilterType
+  onFilterChange?: (filter: FilterType) => void
+  logoSrc?: string
+  title?: string
+}
 
+export function SidebarFilters({
+  activeFilter,
+  onFilterChange,
+  logoSrc = "/capsumi-logo-color.PNG",
+  title = "Capsumi",
+}: SidebarFiltersProps) {
   const filters = [
     { id: "all" as FilterType, label: "All Capsules", icon: Grid3x3 },
     { id: "active" as FilterType, label: "Active", icon: Clock },
@@ -19,24 +27,40 @@ export function SidebarFilters() {
   ]
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col gap-2 border-r border-border/40 bg-card p-4">
-      <h2 className="mb-2 px-3 text-sm font-semibold text-muted-foreground">Filters</h2>
-      <div className="flex flex-col gap-1">
+    <aside className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 p-6
+                       bg-pink-50/40 backdrop-blur-xl border border-pink-500/50
+                       rounded-tr-2xl rounded-br-2xl shadow-lg z-50">
+      
+      {/* Logo and Main Title */}
+      <div className="mb-6 flex flex-col items-center">
+        <Image src={logoSrc} alt="Logo" width={100} height={40} className="object-contain mb-2" />
+        <h1 className="text-lg font-bold text-pink-700 text-center">{title}</h1>
+      </div>
+
+      {/* Filters Header */}
+      <h2 className="text-base font-semibold text-pink-700 mb-1 text-center">Filters</h2>
+      <p className="mb-4 text-xs text-pink-700/90 text-center">
+        💡 Use filters to find your capsules quickly!
+      </p>
+
+      {/* Filter Buttons */}
+      <div className="flex flex-col gap-3 mt-2">
         {filters.map((filter) => {
           const Icon = filter.icon
           return (
-            <Button
+            <button
               key={filter.id}
-              variant={activeFilter === filter.id ? "secondary" : "ghost"}
+              onClick={() => onFilterChange?.(filter.id)}
               className={cn(
-                "justify-start gap-3 rounded-2xl",
-                activeFilter === filter.id && "bg-primary/10 text-primary hover:bg-primary/20",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all backdrop-blur-lg border border-pink-500/40 text-center",
+                activeFilter === filter.id
+                  ? "bg-pink-100/40 text-pink-800 shadow-md scale-105"
+                  : "bg-pink-50/20 text-pink-800/85 hover:bg-pink-500/25 hover:text-pink-800"
               )}
-              onClick={() => setActiveFilter(filter.id)}
             >
               <Icon className="h-4 w-4" />
-              {filter.label}
-            </Button>
+              <span className="text-xs font-medium">{filter.label}</span>
+            </button>
           )
         })}
       </div>

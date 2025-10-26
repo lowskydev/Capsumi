@@ -9,19 +9,27 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus } from "lucide-react"
+import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { useAuth } from "@/components/auth-context"
+import { DatePicker } from "@/components/date-picker"
 
 export function CreateCapsuleForm() {
   const router = useRouter()
+  const { refreshStats } = useAuth()
+  
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [unlockDate, setUnlockDate] = useState("")
+  const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined) // Changed type
   const [textContent, setTextContent] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
   const [images, setImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
   const [audio, setAudio] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [unlockImmediately, setUnlockImmediately] = useState(false)
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -36,7 +44,11 @@ export function CreateCapsuleForm() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages([...images, ...Array.from(e.target.files)])
+      const newFiles = Array.from(e.target.files)
+      setImages([...images, ...newFiles])
+      
+      const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file))
+      setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls])
     }
   }
 
@@ -47,28 +59,79 @@ export function CreateCapsuleForm() {
   }
 
   const handleRemoveImage = (index: number) => {
+    URL.revokeObjectURL(imagePreviewUrls[index])
+    
     setImages(images.filter((_, i) => i !== index))
+    setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would save to a database
-    console.log({
-      title,
-      description,
-      unlockDate,
-      textContent,
-      tags,
-      images,
-      audio,
-    })
-    // Redirect to dashboard
-    router.push("/")
+    
+    // Validate unlock date is selected
+    if (!unlockDate) {
+      alert("Please select an unlock date")
+      return
+    }
+    
+    setIsSubmitting(true)
+
+    try {
+      const contentTypes: ("text" | "image" | "audio")[] = []
+      if (textContent) contentTypes.push("text")
+      if (images.length > 0) contentTypes.push("image")
+      if (audio) contentTypes.push("audio")
+
+      const imageUrls = await Promise.all(
+        images.map(img => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.readAsDataURL(img)
+          })
+        })
+      )
+
+      let audioUrl: string | undefined
+      if (audio) {
+        audioUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(audio)
+        })
+      }
+
+      const isLocked = unlockImmediately ? false : unlockDate > new Date()
+
+      const newCapsule: Capsule = {
+        id: `capsule_${Date.now()}`,
+        title,
+        description: description || undefined,
+        unlockDate,
+        createdDate: new Date(),
+        isLocked,
+        previewImage: imageUrls[0] || undefined,
+        textContent: textContent || undefined,
+        images: imageUrls.length > 0 ? imageUrls : undefined,
+        audioUrl,
+        contentTypes: contentTypes as readonly ("text" | "image" | "audio")[],
+        tags: tags.length > 0 ? tags : undefined,
+      }
+
+      CapsuleStorage.saveCapsule(newCapsule)
+      refreshStats()
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
+      router.push(`/capsule/${newCapsule.id}`)
+    } catch (error) {
+      console.error("Error creating capsule:", error)
+      alert("Failed to create capsule. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Basic Information */}
       <Card className="p-6">
         <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
           <FileText className="w-6 h-6 text-primary" />
@@ -105,22 +168,37 @@ export function CreateCapsuleForm() {
           </div>
 
           <div>
-            <Label htmlFor="unlockDate" className="text-base flex items-center gap-2">
+            <Label className="text-base flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Unlock Date *
             </Label>
-            <Input
-              id="unlockDate"
-              type="date"
-              value={unlockDate}
-              onChange={(e) => setUnlockDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              required
-              className="mt-2"
-            />
+            <div className="mt-2">
+              <DatePicker
+                date={unlockDate}
+                onDateChange={setUnlockDate}
+                placeholder="Choose when to unlock this capsule"
+                disablePastDates={true}
+              />
+            </div>
             <p className="text-sm text-muted-foreground mt-1.5">
               Choose when this capsule will be unlocked and revealed
             </p>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-accent/5">
+            <input
+              type="checkbox"
+              id="unlockImmediately"
+              checked={unlockImmediately}
+              onChange={(e) => setUnlockImmediately(e.target.checked)}
+              className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+            />
+            <Label htmlFor="unlockImmediately" className="text-sm cursor-pointer">
+              <span className="font-medium">Unlock immediately</span>
+              <span className="block text-muted-foreground mt-0.5">
+                Create this capsule in an unlocked state (bypass the unlock date)
+              </span>
+            </Label>
           </div>
 
           <div>
@@ -213,12 +291,12 @@ export function CreateCapsuleForm() {
             <input id="images" type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
           </div>
 
-          {images.length > 0 && (
+          {imagePreviewUrls.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              {images.map((image, index) => (
+              {imagePreviewUrls.map((url, index) => (
                 <div key={index} className="relative group">
                   <img
-                    src={URL.createObjectURL(image) || "/placeholder.svg"}
+                    src={url}
                     alt={`Upload ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
                   />
@@ -279,12 +357,32 @@ export function CreateCapsuleForm() {
 
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">
-        <Button type="button" variant="outline" onClick={() => router.push("/")} size="lg">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => router.push("/dashboard")} 
+          size="lg"
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
-        <Button type="submit" size="lg" className="gap-2">
-          <Plus className="w-5 h-5" />
-          Create Capsule
+        <Button 
+          type="submit" 
+          size="lg" 
+          className="gap-2"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-5 h-5" />
+              Create Capsule
+            </>
+          )}
         </Button>
       </div>
     </form>
