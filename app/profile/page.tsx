@@ -1,12 +1,12 @@
 "use client"
 
-import { Navigation } from "@/components/navigation"
+
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeft, Camera, Package, Lock, Unlock, Calendar, LogOut } from "lucide-react"
+import { ArrowLeft, Camera, Calendar, LogOut } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-context"
 import { useState } from "react"
@@ -37,7 +37,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen">
-      <Navigation />
       <main className="container max-w-4xl py-8 px-6 items-center mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -80,33 +79,6 @@ export default function ProfilePage() {
                   <Calendar className="w-4 h-4" />
                   <span>Member since {user.joinDate.toLocaleDateString()}</span>
                 </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Statistics */}
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Your Statistics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Total Capsules */}
-              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                <Package className="w-8 h-8 text-primary mx-auto mb-2" />
-                <div className="text-3xl font-bold mb-1 text-primary">{user.stats.totalCapsules}</div>
-                <div className="text-sm font-medium text-foreground/70">Total Capsules</div>
-              </div>
-
-              {/* Locked */}
-              <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-center">
-                <Lock className="w-8 h-8 text-secondary mx-auto mb-2" />
-                <div className="text-3xl font-bold mb-1 text-secondary">{user.stats.lockedCapsules}</div>
-                <div className="text-sm font-medium text-foreground/70">Locked</div>
-              </div>
-
-              {/* Unlocked */}
-              <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 text-center">
-                <Unlock className="w-8 h-8 text-accent-foreground mx-auto mb-2" />
-                <div className="text-3xl font-bold mb-1 text-accent-foreground">{user.stats.unlockedCapsules}</div>
-                <div className="text-sm font-medium text-foreground/70">Unlocked</div>
               </div>
             </div>
           </Card>

@@ -1,20 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Navigation } from "@/components/navigation"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Package, Lock, Unlock, Calendar, TrendingUp, Users, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function DashboardPage() {
-  const searchQuery = ""
-  const setSearchQuery = () => { }
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Navigation with unified search */}
-      <Navigation searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
       <div className="flex flex-1 relative">
         {/* Dashboard Sidebar */}
         <DashboardSidebar />

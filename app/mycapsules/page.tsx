@@ -8,13 +8,11 @@ import { FilterType } from "@/components/sidebar-filters"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Plus } from "lucide-react"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
-import { Navigation } from "@/components/navigation"
 import { useAuth } from "@/components/auth-context"
 
 export default function MyCapsulesPage() {
     const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
     const [activeFilter, setActiveFilter] = useState<FilterType>("all")
-    const [searchQuery, setSearchQuery] = useState("")
 
     const { refreshStats } = useAuth()
 
@@ -50,21 +48,11 @@ export default function MyCapsulesPage() {
                 break
         }
 
-        // Search filter (from top nav)
-        if (searchQuery.trim() !== "") {
-            result = result.filter((c) =>
-                c.title.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-        }
-
         return result
-    }, [capsules, activeFilter, searchQuery])
+    }, [capsules, activeFilter])
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            {/* Navigation with unified search */}
-            <Navigation searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
             <div className="flex flex-1 relative">
                 {/* Dashboard Sidebar */}
                 <DashboardSidebar />

@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/navigation"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { TimelineItem } from "@/components/timeline-item"
 import { Button } from "@/components/ui/button"
@@ -77,7 +76,6 @@ const mockCapsules = [
 export default function TimelinePage() {
   return (
     <div className="min-h-screen">
-      <Navigation />
       <div className="flex">
         <DashboardSidebar />
         <main className="flex-1 ml-64 p-6">
