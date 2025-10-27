@@ -28,18 +28,18 @@ export function SidebarFilters({
 
   return (
     <aside className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 p-6
-                       bg-pink-50/40 backdrop-blur-xl border border-pink-500/50
+                       bg-gray-900/90 dark:backdrop-blur-xl border border-gray-700/50
                        rounded-tr-2xl rounded-br-2xl shadow-lg z-50">
       
       {/* Logo and Main Title */}
       <div className="mb-6 flex flex-col items-center">
         <Image src={logoSrc} alt="Logo" width={100} height={40} className="object-contain mb-2" />
-        <h1 className="text-lg font-bold text-pink-700 text-center">{title}</h1>
+        <h1 className="text-lg font-bold text-gray-100 text-center">{title}</h1>
       </div>
 
       {/* Filters Header */}
-      <h2 className="text-base font-semibold text-pink-700 mb-1 text-center">Filters</h2>
-      <p className="mb-4 text-xs text-pink-700/90 text-center">
+      <h2 className="text-base font-semibold text-gray-100 mb-1 text-center">Filters</h2>
+      <p className="mb-4 text-xs text-gray-300 text-center">
         💡 Use filters to find your capsules quickly!
       </p>
 
@@ -52,10 +52,10 @@ export function SidebarFilters({
               key={filter.id}
               onClick={() => onFilterChange?.(filter.id)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all backdrop-blur-lg border border-pink-500/40 text-center",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all border text-center backdrop-blur-lg",
                 activeFilter === filter.id
-                  ? "bg-pink-100/40 text-pink-800 shadow-md scale-105"
-                  : "bg-pink-50/20 text-pink-800/85 hover:bg-pink-500/25 hover:text-pink-800"
+                  ? "bg-gray-700 text-gray-100 shadow-md scale-105 border-gray-600"
+                  : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/60 hover:text-gray-100 border-gray-600"
               )}
             >
               <Icon className="h-4 w-4" />

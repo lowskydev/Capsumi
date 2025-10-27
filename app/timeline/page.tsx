@@ -1,3 +1,5 @@
+"use client"
+
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { TimelineItem } from "@/components/timeline-item"
 import { Button } from "@/components/ui/button"
@@ -74,52 +76,66 @@ const mockCapsules = [
 ]
 
 export default function TimelinePage() {
+  const brandRed = "#f38283"
+  const brandGreen = "#62cf91"
+
   return (
-    <div className="min-h-screen">
-      <div className="flex">
-        <DashboardSidebar />
-        <main className="flex-1 ml-64 p-6">
-          <div className="container max-w-5xl">
-            {/* Header */}
-            <div className="mb-10 flex items-start justify-between">
-              <div>
-                <h1 className="text-4xl font-bold mb-2 text-balance">Timeline View</h1>
-                <p className="text-muted-foreground text-lg">Your capsules arranged chronologically by unlock date</p>
-              </div>
+    <div
+      className="min-h-screen flex bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] transition-colors duration-300"
+      style={
+        {
+          "--brand-red": brandRed,
+          "--brand-green": brandGreen,
+        } as React.CSSProperties
+      }
+    >
+      <DashboardSidebar />
+
+      <main className="flex-1 ml-64 p-8">
+        <div className="container max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="mb-10 flex flex-col md:flex-row items-start justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 text-pink-800 dark:text-[var(--brand-red)]">
+                Timeline View
+              </h1>
+              <p className="text-pink-700 dark:text-[rgba(255,255,255,0.7)] text-lg">
+                Your capsules arranged chronologically by unlock date
+              </p>
+            </div>
+            <Link href="/create">
+              <Button className="gap-2 rounded-2xl bg-[var(--brand-red)] hover:bg-[var(--brand-green)] text-white shadow-md transition-all">
+                <Plus className="w-5 h-5" /> Create Capsule
+              </Button>
+            </Link>
+          </div>
+
+          {/* Timeline */}
+          <div className="relative">
+            {mockCapsules.map((capsule) => (
+              <TimelineItem key={capsule.id} {...capsule} />
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {mockCapsules.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="text-8xl mb-6 opacity-20">⏳</div>
+              <h2 className="text-2xl font-semibold mb-2 text-pink-800 dark:text-[var(--brand-red)]">
+                No capsules in your timeline
+              </h2>
+              <p className="text-pink-700 dark:text-[rgba(255,255,255,0.7)] mb-6 max-w-md">
+                Create your first time capsule to start building your timeline
+              </p>
               <Link href="/create">
-                <Button size="lg" className="gap-2">
-                  <Plus className="w-5 h-5" />
-                  Create Capsule
+                <Button className="gap-2 rounded-2xl bg-[var(--brand-red)] hover:bg-[var(--brand-green)] text-white shadow-md transition-all">
+                  <Plus className="w-5 h-5" /> Create Your First Capsule
                 </Button>
               </Link>
             </div>
-
-            {/* Timeline */}
-            <div className="relative">
-              {mockCapsules.map((capsule) => (
-                <TimelineItem key={capsule.id} {...capsule} />
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {mockCapsules.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="text-8xl mb-6 opacity-20">⏳</div>
-                <h2 className="text-2xl font-semibold mb-2">No capsules in your timeline</h2>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                  Create your first time capsule to start building your timeline
-                </p>
-                <Link href="/create">
-                  <Button size="lg" className="gap-2">
-                    <Plus className="w-5 h-5" />
-                    Create Your First Capsule
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }
