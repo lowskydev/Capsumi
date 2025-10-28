@@ -63,12 +63,7 @@ export function Navigation({ searchQuery, setSearchQuery }: NavigationProps) {
           {user ? (
             <>
               {/* Create Capsule */}
-              <Button asChild className="rounded-2xl gap-2 bg-pink-300/30 text-pink-700 hover:bg-pink-400/40 shadow-md transition-all">
-                <Link href="/create">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Create Capsule</span>
-                </Link>
-              </Button>
+
 
               {/* Theme Toggle */}
               <Button
