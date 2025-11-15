@@ -18,6 +18,34 @@ import { Badge } from "@/components/ui/badge"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { CapsuleCard } from "@/components/capsule-card"
 
+// Chart.js imports
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  TimeScale,
+  ChartOptions,
+} from "chart.js"
+import { Line } from "react-chartjs-2"
+import "chartjs-adapter-date-fns"
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  TimeScale
+)
 
 export default function DashboardPage() {
   const brandRed = "#f38283"
@@ -58,10 +86,11 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const now = new Date()
     const total = capsules.length
+    const MS_DAY = 1000 * 60 * 60 * 24
 
     // Prefer explicit isLocked flag if available; fall back to comparing unlockDate if not present.
     const locked = capsules.filter((c) =>
-      typeof c.isLocked === "boolean" ? c.isLocked : new Date(c.unlockDate) > now
+      typeof c.isLocked === "boolean" ? c.isLocked : (c.unlockDate ? new Date(c.unlockDate) > now : false)
     ).length
     const unlocked = total - locked
 
@@ -71,8 +100,9 @@ export default function DashboardPage() {
     ).length
 
     // upcoming unlocks: capsules scheduled to unlock in the next 30 days
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+    const THIRTY_DAYS_MS = 30 * MS_DAY
     const upcoming = capsules.filter((c) => {
+      if (!c.unlockDate) return false
       const d = new Date(c.unlockDate)
       return d > now && d.getTime() <= now.getTime() + THIRTY_DAYS_MS
     }).length
@@ -94,48 +124,206 @@ export default function DashboardPage() {
 
     // recent capsules sorted by createdDate desc (defensive parse)
     const recent = [...capsules].sort((a, b) => {
-      const da = new Date(a.createdDate).getTime()
-      const db = new Date(b.createdDate).getTime()
+      const da = a.createdDate ? new Date(a.createdDate).getTime() : 0
+      const db = b.createdDate ? new Date(b.createdDate).getTime() : 0
       return db - da
-    }).slice(0, 6)
+    }).slice(0, 20)
 
     // Compute the three items you asked for:
-    // - lastCreated: most recently created capsule
-    // - lastUnlocked: most recent capsule whose unlockDate is in the past (closest past unlock)
-    // - nextToUnlock: upcoming capsule with the soonest unlockDate in the future
     let lastCreated: { capsule: Capsule; when: Date } | null = null
     let lastUnlocked: { capsule: Capsule; when: Date } | null = null
     let nextToUnlock: { capsule: Capsule; when: Date } | null = null
 
     if (capsules.length > 0) {
       // lastCreated
-      const byCreated = [...capsules].sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+      const byCreated = [...capsules].sort((a, b) => {
+        const ta = a.createdDate ? new Date(a.createdDate).getTime() : 0
+        const tb = b.createdDate ? new Date(b.createdDate).getTime() : 0
+        return tb - ta
+      })
       const lc = byCreated[0]
-      lastCreated = { capsule: lc, when: new Date(lc.createdDate) }
+      if (lc) lastCreated = { capsule: lc, when: new Date(lc.createdDate) }
 
       // lastUnlocked: filter unlocked capsules and take the one with latest unlockDate <= now
       const unlockedCaps = capsules
-        .map((c) => ({ c, unlockedAt: new Date(c.unlockDate) }))
-        .filter(({ unlockedAt }) => unlockedAt <= now)
-        .sort((a, b) => b.unlockedAt.getTime() - a.unlockedAt.getTime())
+        .map((c) => ({ c, unlockedAt: c.unlockDate ? new Date(c.unlockDate) : new Date(0) }))
+        .filter(({ unlockedAt }) => unlockedAt && unlockedAt <= now)
+        .sort((a, b) => b.unlockedAt!.getTime() - a.unlockedAt!.getTime())
 
       if (unlockedCaps.length > 0) {
-        lastUnlocked = { capsule: unlockedCaps[0].c, when: unlockedCaps[0].unlockedAt }
+        lastUnlocked = { capsule: unlockedCaps[0].c, when: unlockedCaps[0].unlockedAt! }
       }
 
       // nextToUnlock: future unlocks, soonest first
       const futureCaps = capsules
-        .map((c) => ({ c, unlockAt: new Date(c.unlockDate) }))
-        .filter(({ unlockAt }) => unlockAt > now)
-        .sort((a, b) => a.unlockAt.getTime() - b.unlockAt.getTime())
+        .map((c) => ({ c, unlockAt: c.unlockDate ? new Date(c.unlockDate) : new Date(0) }))
+        .filter(({ unlockAt }) => unlockAt && unlockAt > now)
+        .sort((a, b) => a.unlockAt!.getTime() - b.unlockAt!.getTime())
 
       if (futureCaps.length > 0) {
-        nextToUnlock = { capsule: futureCaps[0].c, when: futureCaps[0].unlockAt }
+        nextToUnlock = { capsule: futureCaps[0].c, when: futureCaps[0].unlockAt! }
       }
     }
 
-    return { total, locked, unlocked, shared, upcoming, imageCount, audioCount, tagCount, recent, lastCreated, lastUnlocked, nextToUnlock }
+    // Build recentActivity with richer info: keep for compatibility but not required by the UI now
+    const recentActivity: { label: string; date: Date; type: "unlocked" | "upcoming" | "created"; days: number }[] = []
+
+    // Upcoming buckets (counts)
+    const upcomingBuckets = {
+      "0-3": 0,
+      "4-7": 0,
+      "8-30": 0,
+      "30+": 0,
+    }
+
+    capsules.forEach((c) => {
+      if (!c.unlockDate) return
+      const unlock = new Date(c.unlockDate)
+      if (unlock <= new Date()) return
+      const daysUntil = Math.ceil((unlock.getTime() - new Date().getTime()) / MS_DAY)
+      if (daysUntil <= 3) upcomingBuckets["0-3"]++
+      else if (daysUntil <= 7) upcomingBuckets["4-7"]++
+      else if (daysUntil <= 30) upcomingBuckets["8-30"]++
+      else upcomingBuckets["30+"]++
+    })
+
+    // Average days until unlock for upcoming capsules (if any)
+    const upcomingList = capsules
+      .map((c) => ({ c, unlockAt: c.unlockDate ? new Date(c.unlockDate) : null }))
+      .filter((it) => it.unlockAt && it.unlockAt > new Date())
+
+    const avgDaysUntilUnlock =
+      upcomingList.length > 0
+        ? Math.round(upcomingList.reduce((acc, it) => acc + Math.ceil((it.unlockAt!.getTime() - new Date().getTime()) / MS_DAY), 0) / upcomingList.length)
+        : 0
+
+    return {
+      total,
+      locked,
+      unlocked,
+      shared,
+      upcoming,
+      imageCount,
+      audioCount,
+      tagCount,
+      recent,
+      lastCreated,
+      lastUnlocked,
+      nextToUnlock,
+      recentActivity,
+      upcomingBuckets,
+      avgDaysUntilUnlock,
+    }
   }, [capsules])
+
+  // Chart data: last 30 days created/unlocked + cumulative
+  const chartConfig = useMemo(() => {
+    const days = 30
+    const now = new Date()
+    const labels: Date[] = []
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(now.getDate() - i)
+      d.setHours(0, 0, 0, 0)
+      labels.push(d)
+    }
+
+    const createdCounts = new Array(days).fill(0)
+    const unlockedCounts = new Array(days).fill(0)
+
+    capsules.forEach((c) => {
+      const created = c.createdDate ? new Date(c.createdDate) : null
+      const unlock = c.unlockDate ? new Date(c.unlockDate) : null
+
+      if (created) {
+        const cd = new Date(created)
+        cd.setHours(0, 0, 0, 0)
+        const idx = labels.findIndex((d) => d.getTime() === cd.getTime())
+        if (idx >= 0) createdCounts[idx]++
+      }
+
+      if (unlock) {
+        const ud = new Date(unlock)
+        ud.setHours(0, 0, 0, 0)
+        const idx = labels.findIndex((d) => d.getTime() === ud.getTime())
+        if (idx >= 0) unlockedCounts[idx]++
+      }
+    })
+
+    // cumulative created
+    const cumulative: number[] = []
+    createdCounts.reduce((acc, v, i) => {
+      const cur = acc + v
+      cumulative[i] = cur
+      return cur
+    }, 0)
+
+    const datasets = [
+      {
+        label: "Created",
+        data: createdCounts,
+        fill: true,
+        backgroundColor: "rgba(243,130,131,0.18)",
+        borderColor: "rgba(243,130,131,0.9)",
+        tension: 0.35,
+        pointRadius: 2,
+      },
+      {
+        label: "Unlocked",
+        data: unlockedCounts,
+        fill: true,
+        backgroundColor: "rgba(98,207,145,0.18)",
+        borderColor: "rgba(98,207,145,0.9)",
+        tension: 0.35,
+        pointRadius: 2,
+      },
+      {
+        label: "Cumulative",
+        data: cumulative,
+        fill: false,
+        borderColor: "rgba(100,100,100,0.6)",
+        tension: 0.2,
+        pointRadius: 0,
+        borderDash: [4, 4],
+      },
+    ]
+
+    return { labels, datasets }
+  }, [capsules])
+
+  const chartOptions = useMemo<ChartOptions<"line">>(() => {
+    const opts = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index" as const, intersect: false },
+      scales: {
+        x: {
+          type: "time" as const,
+          time: { unit: "day" as const, tooltipFormat: "PP" },
+          grid: { display: false },
+          ticks: { maxRotation: 0, autoSkip: true },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+        },
+      },
+      plugins: {
+        legend: { position: "top" as const },
+        tooltip: {
+          callbacks: {
+            label: function (context: any) {
+              const label = context.dataset.label || ""
+              const value = context.parsed?.y ?? context.parsed
+              return `${label}: ${value}`
+            },
+          },
+        },
+      },
+    }
+
+    return opts as unknown as ChartOptions<"line">
+  }, [])
 
   return (
     <div
@@ -248,13 +436,17 @@ export default function DashboardPage() {
                   Growth Overview
                 </h3>
                 <div className="h-64 bg-gradient-to-t from-pink-50 to-transparent dark:from-[rgba(243,130,131,0.1)] dark:to-transparent rounded-xl flex items-center justify-center border-2 border-dashed border-pink-200 dark:border-[rgba(243,130,131,0.3)]">
-                  <p className="text-pink-600 dark:text-[rgba(255,255,255,0.6)] text-sm">
-                    Chart will be displayed here
-                  </p>
+                  {/* Chart inserted here */}
+                  <div className="w-full h-full px-2 py-1">
+                    <Line data={{
+                      labels: chartConfig.labels,
+                      datasets: chartConfig.datasets
+                    }} options={chartOptions} />
+                  </div>
                 </div>
               </div>
 
-              {/* Recent Activity */}
+              {/* Recent Activity (updated layout as requested) */}
               <div className="rounded-2xl p-6 border bg-white dark:bg-[#161616] border-pink-200 dark:border-[rgba(243,130,131,0.3)]">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-pink-700 dark:text-[var(--brand-red)]">
                   <Users className="h-5 w-5" />
