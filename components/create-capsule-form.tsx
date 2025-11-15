@@ -280,7 +280,7 @@ export function CreateCapsuleForm() {
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Share this capsule with people. When you enable "Allow contributors" those people will be able to add images/photos to the capsule.
+            Share this capsule with people. Those people will be able to add images/photos to the capsule.
           </p>
 
           <div className="flex gap-2 items-start">
