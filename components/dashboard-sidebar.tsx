@@ -37,7 +37,7 @@ export function DashboardSidebar() {
       )}
     >
       {/* Theme Toggle */}
-      <div className="absolute top-6 right-6">
+      <div className="absolute top-6 left-6">
         <Button
           variant="ghost"
           size="icon"

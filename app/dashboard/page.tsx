@@ -12,10 +12,130 @@ import {
   Plus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import React, { useEffect, useMemo, useState } from "react"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { CapsuleCard } from "@/components/capsule-card"
+
 
 export default function DashboardPage() {
   const brandRed = "#f38283"
   const brandGreen = "#62cf91"
+  const [capsules, setCapsules] = useState<Capsule[]>(
+    () => CapsuleStorage.getAllCapsules()
+  )
+
+  useEffect(() => {
+    const handleUpdate = () => setCapsules(CapsuleStorage.getAllCapsules())
+    window.addEventListener("capsulesUpdated", handleUpdate)
+    return () => window.removeEventListener("capsulesUpdated", handleUpdate)
+  }, [])
+
+  // helper to format relative time (simple human readable)
+  const timeAgo = (from: Date, to = new Date()) => {
+    const diff = to.getTime() - from.getTime()
+    const abs = Math.abs(diff)
+    const seconds = Math.floor(abs / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+    const weeks = Math.floor(days / 7)
+    const months = Math.floor(days / 30)
+    const years = Math.floor(days / 365)
+
+    const suffix = diff >= 0 ? "ago" : "from now"
+
+    if (seconds < 45) return `${seconds} second${seconds !== 1 ? "s" : ""} ${suffix}`
+    if (minutes < 45) return `${minutes} minute${minutes !== 1 ? "s" : ""} ${suffix}`
+    if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ${suffix}`
+    if (days < 7) return `${days} day${days !== 1 ? "s" : ""} ${suffix}`
+    if (weeks < 5) return `${weeks} week${weeks !== 1 ? "s" : ""} ${suffix}`
+    if (months < 12) return `${months} month${months !== 1 ? "s" : ""} ${suffix}`
+    return `${years} year${years !== 1 ? "s" : ""} ${suffix}`
+  }
+
+  const stats = useMemo(() => {
+    const now = new Date()
+    const total = capsules.length
+
+    // Prefer explicit isLocked flag if available; fall back to comparing unlockDate if not present.
+    const locked = capsules.filter((c) =>
+      typeof c.isLocked === "boolean" ? c.isLocked : new Date(c.unlockDate) > now
+    ).length
+    const unlocked = total - locked
+
+    // Shared if shared flag true or collaborators array exists with entries
+    const shared = capsules.filter((c) =>
+      !!(c.shared || (Array.isArray((c as any).collaborators) && (c as any).collaborators.length > 0))
+    ).length
+
+    // upcoming unlocks: capsules scheduled to unlock in the next 30 days
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
+    const upcoming = capsules.filter((c) => {
+      const d = new Date(c.unlockDate)
+      return d > now && d.getTime() <= now.getTime() + THIRTY_DAYS_MS
+    }).length
+
+    // content totals (defensive)
+    let imageCount = 0
+    let audioCount = 0
+    let tagCount = 0
+
+    capsules.forEach((c) => {
+      if (Array.isArray(c.images)) imageCount += c.images.length
+
+      // audios: new array field `audios` or legacy `audioUrl`
+      if (Array.isArray((c as any).audios)) audioCount += (c as any).audios.length
+      else if ((c as any).audioUrl) audioCount += 1
+
+      if (Array.isArray(c.tags)) tagCount += c.tags.length
+    })
+
+    // recent capsules sorted by createdDate desc (defensive parse)
+    const recent = [...capsules].sort((a, b) => {
+      const da = new Date(a.createdDate).getTime()
+      const db = new Date(b.createdDate).getTime()
+      return db - da
+    }).slice(0, 6)
+
+    // Compute the three items you asked for:
+    // - lastCreated: most recently created capsule
+    // - lastUnlocked: most recent capsule whose unlockDate is in the past (closest past unlock)
+    // - nextToUnlock: upcoming capsule with the soonest unlockDate in the future
+    let lastCreated: { capsule: Capsule; when: Date } | null = null
+    let lastUnlocked: { capsule: Capsule; when: Date } | null = null
+    let nextToUnlock: { capsule: Capsule; when: Date } | null = null
+
+    if (capsules.length > 0) {
+      // lastCreated
+      const byCreated = [...capsules].sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+      const lc = byCreated[0]
+      lastCreated = { capsule: lc, when: new Date(lc.createdDate) }
+
+      // lastUnlocked: filter unlocked capsules and take the one with latest unlockDate <= now
+      const unlockedCaps = capsules
+        .map((c) => ({ c, unlockedAt: new Date(c.unlockDate) }))
+        .filter(({ unlockedAt }) => unlockedAt <= now)
+        .sort((a, b) => b.unlockedAt.getTime() - a.unlockedAt.getTime())
+
+      if (unlockedCaps.length > 0) {
+        lastUnlocked = { capsule: unlockedCaps[0].c, when: unlockedCaps[0].unlockedAt }
+      }
+
+      // nextToUnlock: future unlocks, soonest first
+      const futureCaps = capsules
+        .map((c) => ({ c, unlockAt: new Date(c.unlockDate) }))
+        .filter(({ unlockAt }) => unlockAt > now)
+        .sort((a, b) => a.unlockAt.getTime() - b.unlockAt.getTime())
+
+      if (futureCaps.length > 0) {
+        nextToUnlock = { capsule: futureCaps[0].c, when: futureCaps[0].unlockAt }
+      }
+    }
+
+    return { total, locked, unlocked, shared, upcoming, imageCount, audioCount, tagCount, recent, lastCreated, lastUnlocked, nextToUnlock }
+  }, [capsules])
 
   return (
     <div
@@ -57,7 +177,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
-                  24
+                  {stats.total}
                 </h3>
                 <p className="text-sm text-pink-600 dark:text-[rgba(255,255,255,0.7)]">
                   Total Capsules
@@ -74,8 +194,8 @@ export default function DashboardPage() {
                     Active
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-blue-900 dark:text-[var(--brand-green)] mb-1">
-                  18
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                  {stats.locked}
                 </h3>
                 <p className="text-sm text-blue-600 dark:text-[rgba(255,255,255,0.7)]">
                   Locked
@@ -92,8 +212,8 @@ export default function DashboardPage() {
                     Open
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-green-900 dark:text-[var(--brand-green)] mb-1">
-                  6
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                  {stats.unlocked}
                 </h3>
                 <p className="text-sm text-green-600 dark:text-[rgba(255,255,255,0.7)]">
                   Unlocked
@@ -110,8 +230,8 @@ export default function DashboardPage() {
                     This month
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-purple-900 dark:text-[var(--brand-green)] mb-1">
-                  3
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                  {stats.upcoming}
                 </h3>
                 <p className="text-sm text-purple-600 dark:text-[rgba(255,255,255,0.7)]">
                   Upcoming
@@ -141,37 +261,44 @@ export default function DashboardPage() {
                   Recent Activity
                 </h3>
                 <div className="space-y-4">
-                  {[
-                    {
-                      color: "bg-pink-500",
-                      label: "New capsule created",
-                      time: "2 hours ago",
-                    },
-                    {
-                      color: "bg-blue-500",
-                      label: "Capsule unlocked",
-                      time: "1 day ago",
-                    },
-                    {
-                      color: "bg-green-500",
-                      label: "Content updated",
-                      time: "3 days ago",
-                    },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div
-                        className={`${item.color} w-2 h-2 rounded-full mt-2 dark:bg-[var(--brand-green)]`}
-                      ></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-pink-900 dark:text-[rgba(255,255,255,0.9)]">
-                          {item.label}
-                        </p>
-                        <p className="text-xs text-pink-600 dark:text-[rgba(255,255,255,0.5)]">
-                          {item.time}
-                        </p>
-                      </div>
+                  {/* Last capsule created */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 bg-pink-500 dark:bg-[var(--brand-green)]" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-pink-900 dark:text-[rgba(255,255,255,0.9)]">
+                        {stats.lastCreated ? `Last created: ${stats.lastCreated.capsule.title}` : "No capsules yet"}
+                      </p>
+                      <p className="text-xs text-pink-600 dark:text-[rgba(255,255,255,0.5)]">
+                        {stats.lastCreated ? timeAgo(stats.lastCreated.when) : ""}
+                      </p>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Last capsule unlocked */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 bg-blue-500 dark:bg-[var(--brand-green)]" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-pink-900 dark:text-[rgba(255,255,255,0.9)]">
+                        {stats.lastUnlocked ? `Last unlocked: ${stats.lastUnlocked.capsule.title}` : "No recent unlocks"}
+                      </p>
+                      <p className="text-xs text-pink-600 dark:text-[rgba(255,255,255,0.5)]">
+                        {stats.lastUnlocked ? timeAgo(stats.lastUnlocked.when) : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Next capsule to unlock */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full mt-2 bg-green-500 dark:bg-[var(--brand-green)]" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-pink-900 dark:text-[rgba(255,255,255,0.9)]">
+                        {stats.nextToUnlock ? `Next to unlock: ${stats.nextToUnlock.capsule.title}` : "No upcoming unlocks"}
+                      </p>
+                      <p className="text-xs text-pink-600 dark:text-[rgba(255,255,255,0.5)]">
+                        {stats.nextToUnlock ? timeAgo(stats.nextToUnlock.when) : ""}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -10,9 +10,15 @@ export interface Capsule {
   previewImage?: string
   textContent?: string
   images?: string[]
-  audioUrl?: string
+  audios?: string[]          // contributor-uploaded audios (data URLs)
+  audioUrl?: string          // legacy single-audio field (kept for compatibility)
   contentTypes: readonly ("text" | "image" | "audio")[]
   tags?: string[]
+
+  // New sharing / collaboration fields
+  shared?: boolean                 // true when capsule is shared with others
+  collaborators?: string[]         // list of emails/usernames this capsule is shared with
+  allowContributors?: boolean      // when true, collaborators can add images/audios/tags/messages
 }
 
 const CAPSULES_KEY = 'capsumi_capsules'
@@ -84,11 +90,13 @@ export class CapsuleStorage {
     
     const locked = capsules.filter(c => new Date(c.unlockDate) > now).length
     const unlocked = capsules.filter(c => new Date(c.unlockDate) <= now).length
-    
+    const shared = capsules.filter((c: any) => !!c.shared).length
+
     return {
       totalCapsules: capsules.length,
       lockedCapsules: locked,
       unlockedCapsules: unlocked,
+      sharedCapsules: shared,
     }
   }
 

@@ -1,6 +1,7 @@
 "use client"
 
-import { ImageIcon, FileText, Music, Calendar, Tag } from "lucide-react"
+import React from "react"
+import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion } from "framer-motion"
@@ -12,6 +13,10 @@ interface UnlockedCapsuleViewProps {
   createdDate: Date | string
   unlockDate: Date | string
   tags?: string[]
+  // new optional sharing fields
+  shared?: boolean
+  collaborators?: string[]
+  allowContributors?: boolean
 }
 
 export function UnlockedCapsuleView({
@@ -21,12 +26,37 @@ export function UnlockedCapsuleView({
   createdDate,
   unlockDate,
   tags = [],
+  shared = false,
+  collaborators = [],
+  allowContributors = false,
 }: UnlockedCapsuleViewProps) {
   const created = new Date(createdDate)
   const unlocked = new Date(unlockDate)
 
   return (
     <div className="space-y-6">
+      {/* Sharing summary (if shared) */}
+      {shared && (
+        <Card className="p-4 bg-accent/5 border-accent/10">
+          <div className="flex items-start gap-3">
+            <UserPlus className="w-5 h-5 text-accent-foreground mt-0.5" />
+            <div>
+              <div className="text-sm text-pink-700 dark:text-[rgba(255,255,255,0.85)]">
+                Shared with{" "}
+                <strong className="font-medium">
+                  {collaborators.length > 0 ? collaborators.join(", ") : "people"}
+                </strong>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {allowContributors
+                  ? "Contributors were able to add content while the capsule was locked. The capsule is now unlocked and read-only."
+                  : "Contributors were not allowed to add content. The capsule is unlocked and read-only."}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Timeline Info */}
       <Card className="p-6 bg-accent/10 border-accent/20">
         <div className="flex flex-wrap gap-6 text-sm">

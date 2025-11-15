@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2 } from "lucide-react"
+import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2, UserPlus } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -14,6 +14,10 @@ interface CapsuleCardProps {
   previewImage?: string
   contentTypes: readonly ("text" | "image" | "audio")[]
   tags?: string[]
+  // optional sharing fields (new)
+  shared?: boolean
+  collaborators?: string[]
+  allowContributors?: boolean
   onDelete?: (id: string) => void
 }
 
@@ -26,6 +30,9 @@ export function CapsuleCard({
   previewImage,
   contentTypes = [],
   tags = [],
+  shared = false,
+  collaborators = [],
+  allowContributors = false,
   onDelete,
 }: CapsuleCardProps) {
   const daysUntilUnlock = Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
@@ -35,23 +42,32 @@ export function CapsuleCard({
 
   return (
     <Link href={`/capsule/${id}`} className="relative block">
-      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0">
+      {/* 
+        Note: to keep the exact content positions you had (preview image on top,
+        overlays, then content block), we only enforce a fixed height on the Card root
+        and make the card a column flex so the image remains at the top and the content
+        area is constrained to the remaining space. Content that overflows will be hidden
+        / truncated so all cards have the same dimensions without reordering elements.
+      */}
+      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-110">
         {/* Delete Button */}
         {onDelete && (
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault()
+              e.stopPropagation()
               onDelete(id)
             }}
             className="absolute top-2 right-2 z-10 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-80 hover:opacity-100 transition"
+            aria-label="Delete capsule"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         )}
 
-        {/* Preview Image */}
-        <div className="relative w-full h-48">
+        {/* Preview Image (kept at the top, fixed height) */}
+        <div className="relative w-full h-48 flex-shrink-0">
           {previewImage ? (
             <img
               src={previewImage}
@@ -61,6 +77,21 @@ export function CapsuleCard({
           ) : (
             <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
               <div className="text-6xl opacity-20">📦</div>
+            </div>
+          )}
+
+          {/* Shared / Collaborators Overlay */}
+          {shared && (
+            <div className="absolute top-3 left-3">
+              <div
+                className="p-2 rounded-full backdrop-blur-sm bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(10,10,10,0.6)] text-pink-600 dark:text-[var(--brand-green)] flex items-center gap-1"
+                title={collaborators.length > 0 ? `Shared with ${collaborators.join(", ")}` : "Shared"}
+              >
+                <UserPlus className="w-4 h-4" />
+                {collaborators.length > 0 && (
+                  <span className="text-xs font-medium hidden sm:inline-block">{collaborators.length}</span>
+                )}
+              </div>
             </div>
           )}
 
@@ -96,7 +127,8 @@ export function CapsuleCard({
         </div>
 
         {/* Card Content */}
-        <div className="p-5">
+        {/* make this the flex-1 area and hide overflow so card height remains fixed */}
+        <div className="p-5 flex-1 overflow-hidden">
           <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-2 group-hover:text-[var(--brand-red)] transition-colors">
             {title}
           </h3>
@@ -152,3 +184,5 @@ export function CapsuleCard({
     </Link>
   )
 }
+
+export default CapsuleCard

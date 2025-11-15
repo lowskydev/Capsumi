@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle } from "lucide-react"
+import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
@@ -31,6 +31,11 @@ export function CreateCapsuleForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [unlockImmediately, setUnlockImmediately] = useState(false)
 
+  // Sharing / collaborators state
+  const [sharedWith, setSharedWith] = useState<string[]>([])
+  const [currentShare, setCurrentShare] = useState("")
+  const [allowContributors, setAllowContributors] = useState(false)
+
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
       setTags([...tags, currentTag.trim()])
@@ -40,6 +45,19 @@ export function CreateCapsuleForm() {
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter((tag) => tag !== tagToRemove))
+  }
+
+  const handleAddShare = () => {
+    const trimmed = currentShare.trim()
+    if (!trimmed) return
+    if (!sharedWith.includes(trimmed)) {
+      setSharedWith([...sharedWith, trimmed])
+      setCurrentShare("")
+    }
+  }
+
+  const handleRemoveShare = (shareToRemove: string) => {
+    setSharedWith(sharedWith.filter((s) => s !== shareToRemove))
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +121,12 @@ export function CreateCapsuleForm() {
 
       const isLocked = unlockImmediately ? false : unlockDate > new Date()
 
-      const newCapsule: Capsule = {
+      // include new sharing fields. we cast to an extended type to avoid TS errors when lib type isn't updated yet
+      const newCapsule: Capsule & {
+        shared?: boolean
+        collaborators?: string[]
+        allowContributors?: boolean
+      } = {
         id: `capsule_${Date.now()}`,
         title,
         description: description || undefined,
@@ -116,6 +139,11 @@ export function CreateCapsuleForm() {
         audioUrl,
         contentTypes: contentTypes as readonly ("text" | "image" | "audio")[],
         tags: tags.length > 0 ? tags : undefined,
+
+        // sharing-related fields:
+        shared: sharedWith.length > 0,
+        collaborators: sharedWith.length > 0 ? sharedWith : undefined,
+        allowContributors: sharedWith.length > 0 ? allowContributors : undefined,
       }
 
       CapsuleStorage.saveCapsule(newCapsule)
@@ -239,6 +267,86 @@ export function CreateCapsuleForm() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </Card>
+
+      {/* Sharing & Permissions */}
+      <Card className="p-6">
+        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+          <UserPlus className="w-6 h-6 text-primary" />
+          Sharing & Permissions
+        </h2>
+
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Share this capsule with people. When you enable "Allow contributors" those people will be able to add images/photos to the capsule.
+          </p>
+
+          <div className="flex gap-2 items-start">
+            <div className="flex-1 min-w-0">
+              <Label className="text-sm">Add people (email or username)</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  value={currentShare}
+                  onChange={(e) => setCurrentShare(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAddShare()
+                    }
+                  }}
+                  placeholder="e.g. alice@example.com or @alice"
+                />
+                <Button type="button" onClick={handleAddShare} variant="outline">
+                  Add
+                </Button>
+              </div>
+
+              {sharedWith.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {sharedWith.map((s) => (
+                    <Badge key={s} variant="secondary" className="gap-1.5 pr-1.5">
+                      {s}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveShare(s)}
+                        className="hover:bg-background/50 rounded-full p-0.5"
+                        aria-label={`Remove ${s}`}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="w-56">
+              <Label className="text-sm">Permissions</Label>
+              <div className="mt-2 flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="permission"
+                    checked={!allowContributors}
+                    onChange={() => setAllowContributors(false)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">View only</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="permission"
+                    checked={allowContributors}
+                    onChange={() => setAllowContributors(true)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Add people (can contribute images/photos)</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </Card>

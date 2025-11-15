@@ -1,32 +1,51 @@
+"use client"
+
+import React, { useMemo } from "react"
 import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, ArrowRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import type { Capsule } from "@/lib/capsule-storage"
 
-interface TimelineItemProps {
-  id: string
-  title: string
-  unlockDate: Date
-  createdDate: Date
-  isLocked: boolean
-  previewImage?: string
-  contentTypes: readonly ("text" | "image" | "audio")[]
-  tags?: string[]
-  description?: string
+interface Props {
+  capsule: Capsule
+  // optional fixedHeight override (px or Tailwind class) if you want different sizing later
+  fixedHeightClass?: string
 }
 
-export function TimelineItem({
-  id,
-  title,
-  unlockDate,
-  createdDate,
-  isLocked,
-  previewImage,
-  contentTypes,
-  tags = [],
-  description,
-}: TimelineItemProps) {
-  const daysUntilUnlock = Math.ceil((unlockDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+/**
+ * TimelineItem - fixed-size variant
+ *
+ * Ensures each item renders at a consistent height regardless of its content.
+ * Key techniques:
+ * - outer Card has a fixed height (configurable via fixedHeightClass, default md:h-48)
+ * - content area uses flex layout with min-h-0 on the flex child so truncation/overflow works
+ * - description is truncated (line-clamp) and images are cover-fit to avoid changing layout
+ * - badges/icons are placed in the header so they don't push the card height
+ *
+ * If you want a different card height, pass fixedHeightClass (e.g. "h-64" or "md:h-56").
+ */
+
+export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
+  const createdDate = useMemo(() => (capsule.createdDate ? new Date(capsule.createdDate) : null), [capsule.createdDate])
+  const unlockDate = useMemo(() => (capsule.unlockDate ? new Date(capsule.unlockDate) : null), [capsule.unlockDate])
+  const now = useMemo(() => new Date(), [])
+
+  const isLocked =
+    typeof capsule.isLocked === "boolean"
+      ? capsule.isLocked
+      : unlockDate
+      ? unlockDate > now
+      : false
+
+  const daysUntilUnlock = useMemo(() => {
+    if (!unlockDate) return null
+    const diffMs = unlockDate.getTime() - now.getTime()
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+  }, [unlockDate, now])
+
+  const contentTypes = capsule.contentTypes ?? []
+  const tags = capsule.tags ?? []
 
   return (
     <div className="relative pl-8 pb-12 group">
@@ -38,96 +57,118 @@ export function TimelineItem({
         className={`absolute left-0 top-2 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center ${
           isLocked ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
         }`}
+        aria-hidden
       >
         {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
       </div>
 
-      {/* Content Card */}
-      <div className="bg-card rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md">
-        <div className="flex flex-col md:flex-row">
-          {/* Preview Image */}
-          {previewImage && (
-            <div className="md:w-64 h-48 md:h-auto bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex-shrink-0">
-              <img src={previewImage || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
+      {/* Content Card: fixed height to keep all items equal */}
+      <div
+        className={`bg-card rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass}`}
+      >
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Preview Image: fixed width and full height so it doesn't change the card height */}
+          {capsule.previewImage ? (
+            <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
+              <img
+                src={capsule.previewImage}
+                alt={capsule.title ?? "Capsule preview"}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-muted/5 flex items-center justify-center">
+              <ImageIcon className="w-10 h-10 text-muted-foreground" />
             </div>
           )}
 
-          {/* Content */}
-          <div className="flex-1 p-6">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-xl mb-1 text-balance">{title}</h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Created {createdDate.toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 font-medium">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Opens {unlockDate.toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Badge */}
-              {isLocked && daysUntilUnlock > 0 && (
-                <Badge variant="secondary" className="ml-4">
-                  {daysUntilUnlock} days left
-                </Badge>
-              )}
-              {!isLocked && (
-                <Badge variant="outline" className="ml-4 bg-accent/10 text-accent-foreground border-accent/20">
-                  Unlocked
-                </Badge>
-              )}
-            </div>
-
-            {/* Description */}
-            {description && <p className="text-muted-foreground mb-4 line-clamp-2 text-pretty">{description}</p>}
-
-            {/* Content Types & Tags */}
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center gap-2">
-                {contentTypes.includes("text") && (
-                  <div className="p-1.5 rounded-lg bg-muted">
-                    <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                  </div>
-                )}
-                {contentTypes.includes("image") && (
-                  <div className="p-1.5 rounded-lg bg-muted">
-                    <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                  </div>
-                )}
-                {contentTypes.includes("audio") && (
-                  <div className="p-1.5 rounded-lg bg-muted">
-                    <Music className="w-3.5 h-3.5 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {tags.slice(0, 4).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {tags.length > 4 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{tags.length - 4}
-                    </Badge>
+          {/* Content area: flex-1 with min-h-0 so children can truncate/scroll inside fixed height */}
+          <div className="flex-1 p-4 md:p-6 min-h-0 flex flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg mb-1 text-balance truncate">{capsule.title}</h3>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground truncate">
+                  {createdDate && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">Created {createdDate.toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {unlockDate && (
+                    <div className="flex items-center gap-1.5 font-medium truncate">
+                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">Opens {unlockDate.toLocaleDateString()}</span>
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
+
+              {/* Status badges (kept small so they don't grow card) */}
+              <div className="ml-3 flex-shrink-0 flex flex-col items-end gap-2">
+                {isLocked && daysUntilUnlock !== null && daysUntilUnlock > 0 && (
+                  <Badge variant="secondary" className="text-xs px-2 py-1">
+                    {daysUntilUnlock}d
+                  </Badge>
+                )}
+                {!isLocked && (
+                  <Badge variant="outline" className="text-xs px-2 py-1 bg-accent/10 text-accent-foreground border-accent/20">
+                    Unlocked
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {/* View Button */}
-            <Link href={`/capsule/${id}`}>
-              <Button variant="outline" className="gap-2 bg-transparent">
-                View Capsule
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+            {/* Description: allow truncation with line-clamp so it won't expand card */}
+            {capsule.description && (
+              <p className="text-muted-foreground mt-2 mb-3 line-clamp-3 text-sm overflow-hidden">
+                {capsule.description}
+              </p>
+            )}
+
+            <div className="mt-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {contentTypes.includes("text") && (
+                    <div className="p-1.5 rounded-lg bg-muted">
+                      <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {contentTypes.includes("image") && (
+                    <div className="p-1.5 rounded-lg bg-muted">
+                      <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {contentTypes.includes("audio") && (
+                    <div className="p-1.5 rounded-lg bg-muted">
+                      <Music className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {tags.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {tags.length > 3 && (
+                      <Badge variant="outline" className="text-xs">+{tags.length - 3}</Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link href={`/capsule/${capsule.id}`}>
+                  <Button variant="outline" className="gap-2 bg-transparent">
+                    View
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

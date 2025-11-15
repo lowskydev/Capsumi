@@ -21,7 +21,13 @@ export default function CapsuleDetailPage() {
   )
   const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
-  const { refreshStats } = useAuth()
+  const auth = useAuth()
+  const { refreshStats } = auth ?? {}
+
+  // derive a simple current user identifier to pass into child components.
+  // adapt this to your auth shape (email/username/id)
+  const currentUserIdentifier =
+    (auth && (auth.user?.email || auth.user?.name || auth.user?.id)) ?? null
 
   useEffect(() => {
     if (!id) return
@@ -37,7 +43,7 @@ export default function CapsuleDetailPage() {
   const handleDelete = () => {
     if (!capsule) return
     CapsuleStorage.deleteCapsule(capsule.id)
-    refreshStats()
+    refreshStats?.()
     router.push("/mycapsules")
   }
 
@@ -149,10 +155,9 @@ export default function CapsuleDetailPage() {
           className="rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-white dark:bg-[#161616] shadow-md transition-all"
         >
           {capsule.isLocked ? (
-            <LockedCapsuleView
-              unlockDate={capsule.unlockDate}
-              previewImage={capsule.previewImage}
-            />
+            // Pass the full capsule and the current user's identifier so LockedCapsuleView
+            // can render collaborators and allow contributors to add content (and save it).
+            <LockedCapsuleView capsule={capsule} currentUserIdentifier={currentUserIdentifier} />
           ) : (
             <UnlockedCapsuleView
               textContent={capsule.textContent}
