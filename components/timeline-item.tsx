@@ -17,15 +17,7 @@ interface Props {
  * TimelineItem - fixed-size variant
  *
  * Ensures each item renders at a consistent height regardless of its content.
- * Key techniques:
- * - outer Card has a fixed height (configurable via fixedHeightClass, default md:h-48)
- * - content area uses flex layout with min-h-0 on the flex child so truncation/overflow works
- * - description is truncated (line-clamp) and images are cover-fit to avoid changing layout
- * - badges/icons are placed in the header so they don't push the card height
- *
- * If you want a different card height, pass fixedHeightClass (e.g. "h-64" or "md:h-56").
  */
-
 export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
   const createdDate = useMemo(() => (capsule.createdDate ? new Date(capsule.createdDate) : null), [capsule.createdDate])
   const unlockDate = useMemo(() => (capsule.unlockDate ? new Date(capsule.unlockDate) : null), [capsule.unlockDate])
@@ -50,12 +42,14 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
   return (
     <div className="relative pl-8 pb-12 group">
       {/* Timeline Line */}
-      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-border group-last:hidden" />
+      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-border dark:bg-[rgba(98,207,145,0.12)] group-last:hidden" />
 
       {/* Timeline Dot */}
       <div
         className={`absolute left-0 top-2 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center ${
-          isLocked ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
+          isLocked
+            ? "bg-primary text-primary-foreground dark:bg-[var(--brand-green)] dark:text-white"
+            : "bg-accent text-accent-foreground dark:bg-[var(--brand-green)] dark:text-white"
         }`}
         aria-hidden
       >
@@ -64,7 +58,7 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
 
       {/* Content Card: fixed height to keep all items equal */}
       <div
-        className={`bg-card rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass}`}
+        className={`bg-card rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass} dark:bg-[#0f0f0f] dark:border-[rgba(98,207,145,0.16)]`}
       >
         <div className="flex flex-col md:flex-row h-full">
           {/* Preview Image: fixed width and full height so it doesn't change the card height */}
@@ -87,8 +81,8 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
           <div className="flex-1 p-4 md:p-6 min-h-0 flex flex-col">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg mb-1 text-balance truncate">{capsule.title}</h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground truncate">
+                <h3 className="font-semibold text-lg mb-1 text-balance truncate dark:text-[rgba(255,255,255,0.95)]">{capsule.title}</h3>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground truncate dark:text-[rgba(255,255,255,0.75)]">
                   {createdDate && (
                     <div className="flex items-center gap-1.5 truncate">
                       <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
@@ -107,12 +101,18 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
               {/* Status badges (kept small so they don't grow card) */}
               <div className="ml-3 flex-shrink-0 flex flex-col items-end gap-2">
                 {isLocked && daysUntilUnlock !== null && daysUntilUnlock > 0 && (
-                  <Badge variant="secondary" className="text-xs px-2 py-1">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs px-2 py-1 bg-[var(--brand-green)] text-white dark:bg-[var(--brand-green)] dark:text-white"
+                  >
                     {daysUntilUnlock}d
                   </Badge>
                 )}
                 {!isLocked && (
-                  <Badge variant="outline" className="text-xs px-2 py-1 bg-accent/10 text-accent-foreground border-accent/20">
+                  <Badge
+                    variant="outline"
+                    className="text-xs px-2 py-1 bg-accent/10 text-accent-foreground border-accent/20 dark:bg-[var(--brand-green)] dark:text-white dark:border-[rgba(98,207,145,0.06)]"
+                  >
                     Unlocked
                   </Badge>
                 )}
@@ -121,7 +121,7 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
 
             {/* Description: allow truncation with line-clamp so it won't expand card */}
             {capsule.description && (
-              <p className="text-muted-foreground mt-2 mb-3 line-clamp-3 text-sm overflow-hidden">
+              <p className="text-muted-foreground mt-2 mb-3 line-clamp-3 text-sm overflow-hidden dark:text-[rgba(255,255,255,0.75)]">
                 {capsule.description}
               </p>
             )}
@@ -149,12 +149,12 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
+                      <Badge key={tag} variant="outline" className="text-xs dark:border-[rgba(98,207,145,0.12)] dark:text-[var(--brand-green)]">
                         {tag}
                       </Badge>
                     ))}
                     {tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">+{tags.length - 3}</Badge>
+                      <Badge variant="outline" className="text-xs dark:text-[var(--brand-green)]">+{tags.length - 3}</Badge>
                     )}
                   </div>
                 )}

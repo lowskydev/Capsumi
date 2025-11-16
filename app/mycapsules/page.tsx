@@ -111,27 +111,29 @@ export default function MyCapsulesPage() {
 
             {/* Sticky Controls: search + filter pills */}
             <div className="sticky top-6 z-30">
-              <div className="flex items-center justify-between gap-3 p-3 rounded-xl backdrop-blur-md bg-white/80 dark:bg-[#0b0b0b]/70 border border-pink-100 dark:border-[rgba(255,255,255,0.03)] shadow-sm transition-colors">
+              <div
+                className="flex items-center justify-between gap-3 p-3 rounded-xl backdrop-blur-md bg-white/80 dark:bg-[#0b0b0b]/70 border border-pink-100 dark:border-[rgba(98,207,145,0.12)]"
+              >
                 {/* Left: search with clear */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="relative flex-1">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-500/80 dark:text-[rgba(255,255,255,0.6)] w-4 h-4" />
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-500/80 dark:text-[rgba(98,207,145,0.8)] w-4 h-4" />
                     {/* use type="text" to avoid native browser clear icon so only our styled X shows */}
                     <input
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search capsules by title, description or tag..."
-                      className="pl-10 pr-10 py-2 w-full rounded-lg border border-pink-200 bg-white/70 text-sm text-pink-800 placeholder:text-pink-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand-red)] transition-colors dark:bg-[#111111] dark:border-[rgba(255,255,255,0.03)] dark:text-[rgba(255,255,255,0.9)]"
+                      className="pl-10 pr-10 py-2 w-full rounded-lg border border-pink-200 dark:border-[rgba(98,207,145,0.18)] bg-white/70 dark:bg-[#0b0b0b]/40 text-sm text-pink-800 dark:text-[rgba(255,255,255,0.9)] placeholder:text-pink-400 dark:placeholder:text-[rgba(98,207,145,0.6)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-red)] dark:focus:ring-[rgba(98,207,145,0.18)]"
                       aria-label="Search capsules"
                     />
                     {query && (
                       <button
                         onClick={() => setQuery("")}
                         aria-label="Clear search"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-pink-100 dark:hover:bg-[rgba(255,255,255,0.03)] transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-pink-100 dark:hover:bg-[rgba(98,207,145,0.06)] transition-colors"
                       >
-                        <XIcon className="w-4 h-4 text-pink-500/80 dark:text-[rgba(255,255,255,0.6)]" />
+                        <XIcon className="w-4 h-4 text-pink-500/80 dark:text-[rgba(98,207,145,0.8)]" />
                       </button>
                     )}
                   </div>
@@ -151,14 +153,8 @@ export default function MyCapsulesPage() {
                               "flex items-center justify-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border",
                               isActive
                                 ? "bg-[var(--brand-red)] text-white border-transparent shadow-sm transform scale-100"
-                                : "bg-white text-[var(--brand-red)] border-[var(--brand-green)] hover:bg-[rgba(243,130,131,0.08)] dark:bg-[#1a1a1a] dark:text-[rgba(255,255,255,0.85)] dark:border-[rgba(98,207,145,0.06)]"
+                                : "bg-white text-[var(--brand-red)] border-[var(--brand-green)] hover:bg-[rgba(243,130,131,0.08)] dark:bg-[#1a1a1a] dark:text-[rgba(255,255,255,0.85)] dark:border-[rgba(255,255,255,0.03)]"
                             )}
-                            style={
-                              {
-                                "--brand-red": brandRed,
-                                "--brand-green": brandGreen,
-                              } as React.CSSProperties
-                            }
                             aria-pressed={isActive}
                           >
                             {filter === "all" ? "All" : filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -168,7 +164,7 @@ export default function MyCapsulesPage() {
                     )}
                   </div>
 
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-50/60 dark:bg-[rgba(255,255,255,0.03)] text-sm text-pink-700 dark:text-[rgba(255,255,255,0.85)] border border-pink-100">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-50/60 dark:bg-[rgba(255,255,255,0.03)] text-sm text-pink-700 dark:text-[rgba(255,255,255,0.85)] border border-pink-100 dark:border-[rgba(98,207,145,0.12)]">
                     <span className="font-medium">{filteredCapsules.length}</span>
                     <span className="ml-2 text-xs text-pink-600/80">result{filteredCapsules.length !== 1 ? "s" : ""}</span>
                   </div>

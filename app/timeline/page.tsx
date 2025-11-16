@@ -76,8 +76,20 @@ export default function TimelinePage() {
     })
   }, [sorted, startDate, endDate, status, tag, search, now])
 
+  // brand variables (kept inline here like other pages)
+  const brandRed = "#f38283"
+  const brandGreen = "#62cf91"
+
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-300">
+    <div
+      className="min-h-screen flex flex-col transition-colors duration-300"
+      style={
+        {
+          "--brand-red": brandRed,
+          "--brand-green": brandGreen,
+        } as React.CSSProperties
+      }
+    >
       <div className="flex flex-1 relative">
         <DashboardSidebar />
 
@@ -103,7 +115,7 @@ export default function TimelinePage() {
             />
 
             {filteredSorted.length === 0 ? (
-              <Card className="p-6">
+              <Card className="p-6 border border-pink-200 dark:border-[rgba(98,207,145,0.12)]">
                 <p className="text-sm text-muted-foreground">No capsules match the selected filters.</p>
               </Card>
             ) : (

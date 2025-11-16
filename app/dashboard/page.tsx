@@ -354,17 +354,17 @@ export default function DashboardPage() {
 
             {/* Stats Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-              {/* Total Capsules */}
-              <div className="rounded-2xl p-6 border transition-all bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200 dark:from-[rgba(243,130,131,0.1)] dark:to-[rgba(243,130,131,0.05)] dark:border-[rgba(243,130,131,0.3)]">
+              {/* Total Capsules (pink) */}
+              <div className="rounded-2xl p-6 border transition-all bg-gradient-to-br from-pink-50 to-pink-100 border-pink-200 dark:from-[rgba(243,130,131,0.06)] dark:to-[rgba(243,130,131,0.02)] dark:border-[rgba(243,130,131,0.12)]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-pink-200 dark:bg-[rgba(243,130,131,0.2)]">
-                    <Package className="h-6 w-6 text-pink-700 dark:text-[var(--brand-green)]" />
+                  <div className="p-3 rounded-xl bg-pink-200 dark:bg-[rgba(243,130,131,0.12)]">
+                    <Package className="h-6 w-6 text-pink-700 dark:text-[rgba(243,130,131,0.95)]" />
                   </div>
-                  <span className="text-xs font-medium text-pink-600 px-2 py-1 rounded-full bg-pink-200 dark:text-[var(--brand-green)] dark:bg-[rgba(98,207,145,0.2)]">
+                  <span className="text-xs font-medium text-pink-600 px-2 py-1 rounded-full bg-pink-200 dark:text-[rgba(243,130,131,0.95)] dark:bg-[rgba(243,130,131,0.12)]">
                     +12%
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[rgba(243,130,131,0.95)] mb-1">
                   {stats.total}
                 </h3>
                 <p className="text-sm text-pink-600 dark:text-[rgba(255,255,255,0.7)]">
@@ -372,17 +372,17 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Active Capsules */}
-              <div className="rounded-2xl p-6 border bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-[rgba(243,130,131,0.1)] dark:to-[rgba(243,130,131,0.05)] dark:border-[rgba(243,130,131,0.3)]">
+              {/* Active Capsules (blue) */}
+              <div className="rounded-2xl p-6 border bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-[rgba(59,130,246,0.06)] dark:to-[rgba(59,130,246,0.02)] dark:border-[rgba(59,130,246,0.12)]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-blue-200 dark:bg-[rgba(243,130,131,0.2)]">
-                    <Lock className="h-6 w-6 text-blue-700 dark:text-[var(--brand-green)]" />
+                  <div className="p-3 rounded-xl bg-blue-200 dark:bg-[rgba(59,130,246,0.12)]">
+                    <Lock className="h-6 w-6 text-blue-700 dark:text-[rgba(59,130,246,0.95)]" />
                   </div>
-                  <span className="text-xs font-medium text-blue-600 px-2 py-1 rounded-full bg-blue-200 dark:text-[var(--brand-green)] dark:bg-[rgba(98,207,145,0.2)]">
+                  <span className="text-xs font-medium text-blue-600 px-2 py-1 rounded-full bg-blue-200 dark:text-[rgba(59,130,246,0.95)] dark:bg-[rgba(59,130,246,0.12)]">
                     Active
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[rgba(59,130,246,0.95)] mb-1">
                   {stats.locked}
                 </h3>
                 <p className="text-sm text-blue-600 dark:text-[rgba(255,255,255,0.7)]">
@@ -390,17 +390,17 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Unlocked Capsules */}
-              <div className="rounded-2xl p-6 border bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-[rgba(98,207,145,0.1)] dark:to-[rgba(98,207,145,0.05)] dark:border-[rgba(98,207,145,0.4)]">
+              {/* Unlocked Capsules (green) */}
+              <div className="rounded-2xl p-6 border bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-[rgba(16,185,129,0.06)] dark:to-[rgba(16,185,129,0.02)] dark:border-[rgba(16,185,129,0.12)]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-green-200 dark:bg-[rgba(98,207,145,0.25)]">
-                    <Unlock className="h-6 w-6 text-green-700 dark:text-[var(--brand-green)]" />
+                  <div className="p-3 rounded-xl bg-green-200 dark:bg-[rgba(16,185,129,0.12)]">
+                    <Unlock className="h-6 w-6 text-green-700 dark:text-[rgba(16,185,129,0.95)]" />
                   </div>
-                  <span className="text-xs font-medium text-green-600 px-2 py-1 rounded-full bg-green-200 dark:text-[var(--brand-green)] dark:bg-[rgba(98,207,145,0.2)]">
+                  <span className="text-xs font-medium text-green-600 px-2 py-1 rounded-full bg-green-200 dark:text-[rgba(16,185,129,0.95)] dark:bg-[rgba(16,185,129,0.12)]">
                     Open
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[rgba(16,185,129,0.95)] mb-1">
                   {stats.unlocked}
                 </h3>
                 <p className="text-sm text-green-600 dark:text-[rgba(255,255,255,0.7)]">
@@ -408,17 +408,17 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* Upcoming Unlocks */}
-              <div className="rounded-2xl p-6 border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 dark:from-[rgba(243,130,131,0.08)] dark:to-[rgba(243,130,131,0.03)] dark:border-[rgba(243,130,131,0.3)]">
+              {/* Upcoming Unlocks (purple) */}
+              <div className="rounded-2xl p-6 border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 dark:from-[rgba(168,85,247,0.06)] dark:to-[rgba(168,85,247,0.02)] dark:border-[rgba(168,85,247,0.12)]">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-purple-200 dark:bg-[rgba(243,130,131,0.2)]">
-                    <Calendar className="h-6 w-6 text-purple-700 dark:text-[var(--brand-green)]" />
+                  <div className="p-3 rounded-xl bg-purple-200 dark:bg-[rgba(168,85,247,0.12)]">
+                    <Calendar className="h-6 w-6 text-purple-700 dark:text-[rgba(168,85,247,0.95)]" />
                   </div>
-                  <span className="text-xs font-medium text-purple-600 px-2 py-1 rounded-full bg-purple-200 dark:text-[var(--brand-green)] dark:bg-[rgba(98,207,145,0.2)]">
+                  <span className="text-xs font-medium text-purple-600 px-2 py-1 rounded-full bg-purple-200 dark:text-[rgba(168,85,247,0.95)] dark:bg-[rgba(168,85,247,0.12)]">
                     This month
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-pink-900 dark:text-[var(--brand-green)] mb-1">
+                <h3 className="text-3xl font-bold text-pink-900 dark:text-[rgba(168,85,247,0.95)] mb-1">
                   {stats.upcoming}
                 </h3>
                 <p className="text-sm text-purple-600 dark:text-[rgba(255,255,255,0.7)]">
@@ -426,6 +426,7 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
+
 
             {/* Additional Stats */}
             <div className="grid gap-6 md:grid-cols-3 mb-8">
