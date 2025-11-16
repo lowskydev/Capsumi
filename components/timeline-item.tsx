@@ -48,8 +48,8 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
       <div
         className={`absolute left-0 top-2 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center ${
           isLocked
-            ? "bg-primary text-primary-foreground dark:bg-[var(--brand-green)] dark:text-white"
-            : "bg-accent text-accent-foreground dark:bg-[var(--brand-green)] dark:text-white"
+            ? "bg-red-600 text-white dark:bg-red-500"
+            : "bg-green-600 text-white dark:bg-green-500"
         }`}
         aria-label={isLocked ? "Locked capsule" : "Unlocked capsule"}
         role="img"
