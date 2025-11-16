@@ -26,7 +26,7 @@ export function LockedCapsuleView({
   previewImage: legacyPreview,
   currentUserIdentifier: propCurrentUserIdentifier,
 }: LockedCapsuleViewProps) {
-  const auth = useAuth?.()
+  const auth = useAuth()
   const authIdentifier =
     (auth && (auth.user?.email || auth.user?.name || auth.user?.id)) ?? null
   const currentUserIdentifier = propCurrentUserIdentifier ?? authIdentifier
@@ -64,6 +64,24 @@ export function LockedCapsuleView({
       localAudioPreviews.forEach((u) => URL.revokeObjectURL(u))
     }
   }, [localImagePreviews, localAudioPreviews])
+
+  // Reset contributor-local UI when capsule changes to avoid showing stale previews/tags
+  useEffect(() => {
+    // Revoke any currently created object URLs
+    localImagePreviews.forEach((u) => URL.revokeObjectURL(u))
+    localAudioPreviews.forEach((u) => URL.revokeObjectURL(u))
+
+    setLocalImages([])
+    setLocalImagePreviews([])
+    setLocalAudios([])
+    setLocalAudioPreviews([])
+    setMessage("")
+    setIsSaving(false)
+    setStatusText(null)
+    setAddedTags(capsule?.tags ?? [])
+    // Intentionally depend only on capsule id (or capsule reference)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capsule?.id])
 
   const isShared = !!(capsule && (capsule.shared || (capsule.collaborators && capsule.collaborators.length > 0)))
   const collaborators = capsule?.collaborators ?? []
@@ -207,7 +225,7 @@ export function LockedCapsuleView({
       setLocalAudios([])
       setLocalAudioPreviews([])
       setMessage("")
-      setAddedTags(updated.tags ?? [])
+      setAddedTags([])
       setStatusText("Saved contributions")
     } catch (err) {
       console.error("Failed to save contributions:", err)
@@ -318,7 +336,8 @@ export function LockedCapsuleView({
                     multiple
                     onChange={handleImageSelect}
                     className="sr-only"
-                    aria-hidden="false"
+                    aria-hidden={true}
+                    tabIndex={-1}
                   />
                   <button
                     type="button"
@@ -360,7 +379,8 @@ export function LockedCapsuleView({
                     multiple
                     onChange={handleAudioSelect}
                     className="sr-only"
-                    aria-hidden="false"
+                    aria-hidden={true}
+                    tabIndex={-1}
                   />
                   <button
                     type="button"

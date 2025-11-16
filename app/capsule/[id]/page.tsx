@@ -19,13 +19,10 @@ export default function CapsuleDetailPage() {
   const [capsule, setCapsule] = useState<Capsule | null>(() =>
     id ? CapsuleStorage.getCapsuleById(id) : null
   )
-  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
   const auth = useAuth()
   const { refreshStats } = auth ?? {}
 
-  // derive a simple current user identifier to pass into child components.
-  // adapt this to your auth shape (email/username/id)
   const currentUserIdentifier =
     (auth && (auth.user?.email || auth.user?.name || auth.user?.id)) ?? null
 
@@ -53,7 +50,7 @@ export default function CapsuleDetailPage() {
   if (!capsule) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] transition-colors duration-300"
+        className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] px-6 text-center transition-colors duration-300"
         style={
           {
             "--brand-red": brandRed,
@@ -61,12 +58,12 @@ export default function CapsuleDetailPage() {
           } as React.CSSProperties
         }
       >
-        <p className="text-pink-600 dark:text-[rgba(255,255,255,0.7)] text-lg">
+        <p className="text-2xl font-semibold text-pink-600 dark:text-[rgba(255,255,255,0.7)] mb-6">
           Capsule not found.
         </p>
         <Button
           onClick={() => router.push("/mycapsules")}
-          className="ml-4 bg-[var(--brand-red)] hover:opacity-90 text-white"
+          className="bg-[var(--brand-red)] hover:opacity-90 text-white px-6 py-3 rounded-lg shadow-md"
         >
           Back to My Capsules
         </Button>
@@ -84,80 +81,93 @@ export default function CapsuleDetailPage() {
         } as React.CSSProperties
       }
     >
-      <Navigation searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <Navigation />
 
-      <main className="w-full max-w-4xl mx-auto py-10 px-6">
+      <main className="max-w-5xl mx-auto py-12 px-8 sm:px-6 lg:px-12">
         {/* Back Link */}
         <Link
           href="/mycapsules"
-          className="inline-flex items-center gap-2 text-pink-600 dark:text-[rgba(255,255,255,0.7)] hover:text-[var(--brand-red)] transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-pink-600 dark:text-[rgba(255,255,255,0.7)] hover:text-[var(--brand-red)] font-medium transition-colors mb-8"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-5 h-5" />
           Back to My Capsules
         </Link>
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-10">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-bold text-pink-800 dark:text-[var(--brand-red)] break-words">
-                {capsule.title}
-              </h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
+          <div className="flex flex-col gap-3 flex-1 min-w-0">
+            <h1 className="text-5xl font-extrabold leading-tight text-pink-900 dark:text-[var(--brand-red)] truncate">
+              {capsule.title}
+            </h1>
 
+            <div className="flex items-center gap-4 flex-wrap">
               <Badge
                 variant={capsule.isLocked ? "default" : "secondary"}
-                className={`
-                  flex items-center gap-1.5 px-2.5 py-1 text-sm font-medium border 
-                  ${
-                    capsule.isLocked
-                      ? "bg-[var(--brand-red)]/10 border-[var(--brand-red)] text-[var(--brand-red)]"
-                      : "bg-[var(--brand-green)]/10 border-[var(--brand-green)] text-[var(--brand-green)]"
-                  }
-                `}
+                className={`flex items-center gap-2 text-sm font-semibold border rounded-full px-3 py-1.5 ${
+                  capsule.isLocked
+                    ? "bg-[var(--brand-red)]/20 border-[var(--brand-red)] text-[var(--brand-red)]"
+                    : "bg-[var(--brand-green)]/20 border-[var(--brand-green)] text-[var(--brand-green)]"
+                }`}
               >
                 {capsule.isLocked ? (
                   <>
-                    <Lock className="w-3.5 h-3.5" />
+                    <Lock className="w-4 h-4" />
                     Locked
                   </>
                 ) : (
                   <>
-                    <Unlock className="w-3.5 h-3.5" />
+                    <Unlock className="w-4 h-4" />
                     Unlocked
                   </>
                 )}
               </Badge>
+
+              {capsule.tags?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {capsule.tags.map((tag, i) => (
+                    <Badge
+                      key={i}
+                      variant="secondary"
+                      className="text-[var(--brand-red)] bg-[var(--brand-red)]/10 border-none cursor-default"
+                    >
+                      #{tag}
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {capsule.description && (
-              <p className="text-pink-700 dark:text-[rgba(255,255,255,0.7)] text-lg leading-relaxed">
+              <p className="mt-3 text-lg text-pink-700 dark:text-[rgba(255,255,255,0.75)] leading-relaxed max-w-3xl">
                 {capsule.description}
               </p>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-3 items-center">
             <ShareDialog capsuleId={capsule.id} capsuleTitle={capsule.title} />
             <Button
               variant="outline"
               size="icon"
               onClick={handleDelete}
-              className="border border-[var(--brand-red)] text-[var(--brand-red)] hover:bg-[var(--brand-red)]/10 transition-colors"
+              className="border border-[var(--brand-red)] text-[var(--brand-red)] hover:bg-[var(--brand-red)]/15 transition-colors shadow-sm"
+              aria-label="Delete Capsule"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-5 h-5" />
             </Button>
           </div>
         </div>
 
         {/* Capsule Content */}
-        <div
-          className="rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-white dark:bg-[#161616] shadow-md transition-all"
+        <section
+          className="rounded-3xl border border-pink-300 dark:border-[rgba(243,130,131,0.3)] bg-white dark:bg-[#161616] shadow-lg p-8 transition-all"
         >
           {capsule.isLocked ? (
-            // Pass the full capsule and the current user's identifier so LockedCapsuleView
-            // can render collaborators and allow contributors to add content (and save it).
-            <LockedCapsuleView capsule={capsule} currentUserIdentifier={currentUserIdentifier} />
+            <LockedCapsuleView
+              capsule={capsule}
+              currentUserIdentifier={currentUserIdentifier}
+            />
           ) : (
             <UnlockedCapsuleView
               textContent={capsule.textContent}
@@ -166,9 +176,11 @@ export default function CapsuleDetailPage() {
               createdDate={capsule.createdDate}
               unlockDate={capsule.unlockDate}
               tags={capsule.tags}
+              collaborators={capsule.collaborators}
+              shared={capsule.shared}
             />
           )}
-        </div>
+        </section>
       </main>
     </div>
   )
