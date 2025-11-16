@@ -9,16 +9,11 @@ import type { Capsule } from "@/lib/capsule-storage"
 
 interface Props {
   capsule: Capsule
-  // optional fixedHeight override (px or Tailwind class) if you want different sizing later
   fixedHeightClass?: string
+  className?: string
 }
 
-/**
- * TimelineItem - fixed-size variant
- *
- * Ensures each item renders at a consistent height regardless of its content.
- */
-export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
+export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className = "" }: Props) {
   const createdDate = useMemo(() => (capsule.createdDate ? new Date(capsule.createdDate) : null), [capsule.createdDate])
   const unlockDate = useMemo(() => (capsule.unlockDate ? new Date(capsule.unlockDate) : null), [capsule.unlockDate])
   const now = useMemo(() => new Date(), [])
@@ -40,28 +35,37 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
   const tags = capsule.tags ?? []
 
   return (
-    <div className="relative pl-8 pb-12 group">
-      {/* Timeline Line */}
-      <div className="absolute left-[15px] top-0 bottom-0 w-0.5 bg-border dark:bg-[rgba(98,207,145,0.12)] group-last:hidden" />
+    <div
+      className={`relative pl-8 pt-12 group ${className} last:mb-0`} // padding top instead of margin bottom for spacing
+    >
+      {/* Timeline vertical line */}
+      <div
+        className="absolute left-[15px] -top-4 bottom-0 w-0.5 bg-gray-300 dark:bg-[rgba(98,207,145,0.12)] group-last:hidden"
+        aria-hidden="true"
+      />
 
-      {/* Timeline Dot */}
+      {/* Timeline dot */}
       <div
         className={`absolute left-0 top-2 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center ${
           isLocked
             ? "bg-primary text-primary-foreground dark:bg-[var(--brand-green)] dark:text-white"
             : "bg-accent text-accent-foreground dark:bg-[var(--brand-green)] dark:text-white"
         }`}
-        aria-hidden
+        aria-label={isLocked ? "Locked capsule" : "Unlocked capsule"}
+        role="img"
       >
-        {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+        {isLocked ? <Lock className="w-3.5 h-3.5" aria-hidden="true" /> : <Unlock className="w-3.5 h-3.5" aria-hidden="true" />}
       </div>
 
-      {/* Content Card: fixed height to keep all items equal */}
+      {/* Content Card */}
       <div
-        className={`bg-card rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass} dark:bg-[#0f0f0f] dark:border-[rgba(98,207,145,0.16)]`}
+        className={`bg-card rounded-2xl border border-gray-300 shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass} dark:bg-[#0f0f0f] dark:border-[rgba(98,207,145,0.16)]`}
+        tabIndex={0}
+        role="region"
+        aria-labelledby={`capsule-title-${capsule.id}`}
       >
         <div className="flex flex-col md:flex-row h-full">
-          {/* Preview Image: fixed width and full height so it doesn't change the card height */}
+          {/* Preview Image */}
           {capsule.previewImage ? (
             <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
               <img
@@ -77,11 +81,16 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
             </div>
           )}
 
-          {/* Content area: flex-1 with min-h-0 so children can truncate/scroll inside fixed height */}
+          {/* Content area */}
           <div className="flex-1 p-4 md:p-6 min-h-0 flex flex-col">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg mb-1 text-balance truncate dark:text-[rgba(255,255,255,0.95)]">{capsule.title}</h3>
+                <h3
+                  id={`capsule-title-${capsule.id}`}
+                  className="font-semibold text-lg mb-1 text-balance truncate dark:text-[rgba(255,255,255,0.95)]"
+                >
+                  {capsule.title}
+                </h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground truncate dark:text-[rgba(255,255,255,0.75)]">
                   {createdDate && (
                     <div className="flex items-center gap-1.5 truncate">
@@ -98,7 +107,7 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
                 </div>
               </div>
 
-              {/* Status badges (kept small so they don't grow card) */}
+              {/* Status badges */}
               <div className="ml-3 flex-shrink-0 flex flex-col items-end gap-2">
                 {isLocked && daysUntilUnlock !== null && daysUntilUnlock > 0 && (
                   <Badge
@@ -119,7 +128,7 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
               </div>
             </div>
 
-            {/* Description: allow truncation with line-clamp so it won't expand card */}
+            {/* Description */}
             {capsule.description && (
               <p className="text-muted-foreground mt-2 mb-3 line-clamp-3 text-sm overflow-hidden dark:text-[rgba(255,255,255,0.75)]">
                 {capsule.description}
@@ -154,7 +163,9 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48" }: Props) {
                       </Badge>
                     ))}
                     {tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs dark:text-[var(--brand-green)]">+{tags.length - 3}</Badge>
+                      <Badge variant="outline" className="text-xs dark:text-[var(--brand-green)]">
+                        +{tags.length - 3}
+                      </Badge>
                     )}
                   </div>
                 )}

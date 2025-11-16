@@ -1,14 +1,11 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
-import { Calendar, Clock, ImageIcon, Tag, UserPlus, Lock, Unlock } from "lucide-react"
-import { TimelineItem } from "@/components/timeline-item"
 import { TimelineFilters } from "@/components/timeline-filters"
+import { TimelineItem } from "@/components/timeline-item"
+import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 
 export default function TimelinePage() {
   const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
@@ -44,18 +41,16 @@ export default function TimelinePage() {
 
   const now = useMemo(() => new Date(), [])
 
-  // apply filters: date range, status, search, tag
+  // apply filters
   const filteredSorted = useMemo(() => {
     const start = startDate ? new Date(startDate + "T00:00:00") : null
     const end = endDate ? new Date(endDate + "T23:59:59") : null
 
     return sorted.filter((c) => {
-      // date filter (based on unlockDate if present, otherwise createdDate)
       const refDate = c.unlockDate ? new Date(c.unlockDate) : new Date(c.createdDate)
       if (start && refDate < start) return false
       if (end && refDate > end) return false
 
-      // status filter
       if (status === "locked") {
         const isLocked = typeof c.isLocked === "boolean" ? c.isLocked : (c.unlockDate ? new Date(c.unlockDate) > now : false)
         if (!isLocked) return false
@@ -66,17 +61,15 @@ export default function TimelinePage() {
         if (!(c.shared || (Array.isArray(c.collaborators) && c.collaborators.length > 0))) return false
       }
 
-      // tag filter
       if (tag && !(Array.isArray(c.tags) && c.tags.includes(tag))) return false
 
-      // search by title
       if (search && !c.title?.toLowerCase().includes(search.toLowerCase())) return false
 
       return true
     })
   }, [sorted, startDate, endDate, status, tag, search, now])
 
-  // brand variables (kept inline here like other pages)
+  // brand colors (used in TimelineItem CSS vars)
   const brandRed = "#f38283"
   const brandGreen = "#62cf91"
 
@@ -119,7 +112,7 @@ export default function TimelinePage() {
                 <p className="text-sm text-muted-foreground">No capsules match the selected filters.</p>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div>
                 {filteredSorted.map((c) => (
                   <TimelineItem key={c.id} capsule={c} />
                 ))}
