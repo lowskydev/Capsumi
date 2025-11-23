@@ -16,6 +16,7 @@ export default function TimelinePage() {
     return () => window.removeEventListener("capsulesUpdated", handleUpdate)
   }, [])
 
+  // -- Advanced Search State --
   const [searchQuery, setSearchQuery] = useState("")
   const [personQuery, setPersonQuery] = useState("")
   const [dateMode, setDateMode] = useState<DateMode>("unlockDate")
@@ -25,9 +26,11 @@ export default function TimelinePage() {
 
   const now = useMemo(() => new Date(), [])
 
+  // Filter and Sort
   const filteredAndSortedCapsules = useMemo(() => {
     let result = [...capsules]
 
+    // 1. Filter by Status
     if (status === "locked") {
       result = result.filter(c => typeof c.isLocked === "boolean" ? c.isLocked : (new Date(c.unlockDate) > now))
     } else if (status === "unlocked") {
@@ -36,6 +39,7 @@ export default function TimelinePage() {
       result = result.filter(c => !!(c.shared || (Array.isArray(c.collaborators) && c.collaborators.length > 0)))
     }
 
+    // 2. Filter by Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(c => {
@@ -46,6 +50,7 @@ export default function TimelinePage() {
       })
     }
 
+    // 3. Filter by Person
     if (personQuery.trim()) {
       const q = personQuery.toLowerCase()
       result = result.filter(c => {
@@ -54,6 +59,7 @@ export default function TimelinePage() {
       })
     }
 
+    // 4. Filter by Date Range
     if (startDate || endDate) {
       result = result.filter(c => {
         let targetDate: Date | undefined
@@ -62,6 +68,7 @@ export default function TimelinePage() {
         else targetDate = new Date(c.unlockDate)
 
         if (!targetDate) return false
+
         if (startDate && targetDate < startDate) return false
         if (endDate) {
           const endOfDay = new Date(endDate)
@@ -72,9 +79,11 @@ export default function TimelinePage() {
       })
     }
 
+    // 5. Sort
     result.sort((a, b) => {
       let dateA: number
       let dateB: number
+
       if (dateMode === "eventDate") {
         dateA = a.eventDate ? new Date(a.eventDate).getTime() : -1
         dateB = b.eventDate ? new Date(b.eventDate).getTime() : -1
@@ -87,6 +96,7 @@ export default function TimelinePage() {
         dateA = new Date(a.unlockDate).getTime()
         dateB = new Date(b.unlockDate).getTime()
       }
+
       return dateA - dateB
     })
 
@@ -109,19 +119,24 @@ export default function TimelinePage() {
             </p>
           </header>
 
-          <AdvancedSearchBar 
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            personQuery={personQuery}
-            onPersonChange={setPersonQuery}
-            dateMode={dateMode}
-            onDateModeChange={setDateMode}
-            startDate={startDate}
-            endDate={endDate}
-            onDateRangeChange={(s, e) => { setStartDate(s); setEndDate(e); }}
-            status={status}
-            onStatusChange={setStatus}
-          />
+          {/* Sticky Filter Bar */}
+          <div className="sticky top-14 lg:top-6 z-30 mb-6 -mx-6 px-6 py-2 lg:mx-0 lg:px-0 lg:py-0">
+            <div className="p-4 rounded-2xl backdrop-blur-md bg-white/90 dark:bg-[#0b0b0b]/90 border border-pink-100 dark:border-[rgba(98,207,145,0.12)] shadow-sm">
+              <AdvancedSearchBar 
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                personQuery={personQuery}
+                onPersonChange={setPersonQuery}
+                dateMode={dateMode}
+                onDateModeChange={setDateMode}
+                startDate={startDate}
+                endDate={endDate}
+                onDateRangeChange={(s, e) => { setStartDate(s); setEndDate(e); }}
+                status={status}
+                onStatusChange={setStatus}
+              />
+            </div>
+          </div>
 
           {filteredAndSortedCapsules.length === 0 ? (
             <Card className="p-12 border border-border flex flex-col items-center justify-center text-center bg-card">

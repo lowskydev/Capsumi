@@ -115,7 +115,8 @@ export default function MyCapsulesPage() {
             </Link>
           </div>
 
-          <div className="sticky top-16 lg:top-6 z-30 mb-6">
+          {/* Sticky Filter Bar */}
+          <div className="sticky top-14 lg:top-6 z-30 mb-6 -mx-6 px-6 py-2 lg:mx-0 lg:px-0 lg:py-0">
             <div className="p-4 rounded-2xl backdrop-blur-md bg-background/90 border border-border shadow-sm">
                <AdvancedSearchBar 
                   searchQuery={searchQuery}
