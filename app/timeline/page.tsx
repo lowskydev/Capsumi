@@ -16,21 +16,18 @@ export default function TimelinePage() {
     return () => window.removeEventListener("capsulesUpdated", handleUpdate)
   }, [])
 
-  // filters state
   const [startDate, setStartDate] = useState<string | null>(null)
   const [endDate, setEndDate] = useState<string | null>(null)
   const [status, setStatus] = useState<"all" | "locked" | "unlocked" | "shared">("all")
   const [search, setSearch] = useState<string>("")
   const [tag, setTag] = useState<string | null>(null)
 
-  // collect all tags for the tag filter dropdown
   const allTags = useMemo(() => {
     const s = new Set<string>()
     capsules.forEach((c) => (c.tags || []).forEach((t: string) => s.add(t)))
     return Array.from(s).sort()
   }, [capsules])
 
-  // base sorted by unlock date
   const sorted = useMemo(() => {
     return [...capsules].sort((a, b) => {
       const aDate = a.unlockDate ? new Date(a.unlockDate).getTime() : new Date(a.createdDate).getTime()
@@ -41,7 +38,6 @@ export default function TimelinePage() {
 
   const now = useMemo(() => new Date(), [])
 
-  // apply filters
   const filteredSorted = useMemo(() => {
     const start = startDate ? new Date(startDate + "T00:00:00") : null
     const end = endDate ? new Date(endDate + "T23:59:59") : null
@@ -63,13 +59,18 @@ export default function TimelinePage() {
 
       if (tag && !(Array.isArray(c.tags) && c.tags.includes(tag))) return false
 
-      if (search && !c.title?.toLowerCase().includes(search.toLowerCase())) return false
+      if (search) {
+        const q = search.toLowerCase()
+        const titleMatch = c.title ? c.title.toLowerCase().includes(q) : false
+        const tagsMatch = c.tags ? c.tags.some((t) => t.toLowerCase().includes(q)) : false
+        
+        if (!titleMatch && !tagsMatch) return false
+      }
 
       return true
     })
   }, [sorted, startDate, endDate, status, tag, search, now])
 
-  // brand colors (used in TimelineItem CSS vars)
   const brandRed = "#f38283"
   const brandGreen = "#62cf91"
 
