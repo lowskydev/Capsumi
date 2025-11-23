@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus } from "lucide-react"
+import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
@@ -23,6 +23,7 @@ export function CreateCapsuleForm() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined)
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined)
   const [textContent, setTextContent] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
@@ -131,6 +132,7 @@ export function CreateCapsuleForm() {
         description: description || undefined,
         unlockDate: unlockImmediately ? new Date() : unlockDate!,
         createdDate: new Date(),
+        eventDate: eventDate || undefined,
         isLocked: !!isLocked,
         previewImage: imageUrls[0] || undefined,
         textContent: textContent || undefined,
@@ -192,23 +194,42 @@ export function CreateCapsuleForm() {
             />
           </div>
 
-          <div>
-            <Label className="text-base flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Unlock Date *
-            </Label>
-            <div className="mt-2">
-              <DatePicker
-                date={unlockDate}
-                onDateChange={setUnlockDate}
-                placeholder="Choose when to unlock this capsule"
-                minDate={new Date()} // Prevents picking past dates
-                disabled={unlockImmediately}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label className="text-base flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Unlock Date *
+              </Label>
+              <div className="mt-2">
+                <DatePicker
+                  date={unlockDate}
+                  onDateChange={setUnlockDate}
+                  placeholder="When should this open?"
+                  minDate={new Date()} // Prevents picking past dates for unlock
+                  disabled={unlockImmediately}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                The date when this capsule becomes available
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Choose when this capsule will be unlocked and revealed
-            </p>
+
+            <div>
+              <Label className="text-base flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Event Happened Date
+              </Label>
+              <div className="mt-2">
+                <DatePicker
+                  date={eventDate}
+                  onDateChange={setEventDate}
+                  placeholder="When did this memory happen?"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                Optional: The actual date of the memory/event
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-accent/5">
@@ -245,7 +266,7 @@ export function CreateCapsuleForm() {
                 }}
                 placeholder="Add tags (press Enter)"
               />
-              <Button type="button" onClick={handleAddTag} variant="outline" className="gap-2 bg-transparent">
+              <Button type="button" onClick={handleAddTag} variant="outline" className="gap-2 bg-transparent cursor-pointer">
                 <Plus className="w-4 h-4" />
                 Add
               </Button>
@@ -297,7 +318,7 @@ export function CreateCapsuleForm() {
                   }}
                   placeholder="e.g. alice@example.com or @alice"
                 />
-                <Button type="button" onClick={handleAddShare} variant="outline">
+                <Button type="button" onClick={handleAddShare} variant="outline" className="cursor-pointer">
                   Add
                 </Button>
               </div>
@@ -472,13 +493,14 @@ export function CreateCapsuleForm() {
           onClick={() => router.push("/dashboard")} 
           size="lg"
           disabled={isSubmitting}
+          className="cursor-pointer"
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           size="lg" 
-          className="gap-2"
+          className="gap-2 cursor-pointer"
           disabled={isSubmitting}
         >
           {isSubmitting ? (

@@ -157,6 +157,7 @@ export default function CapsuleDetailPage() {
                   audioUrl={capsule.audioUrl}
                   createdDate={capsule.createdDate}
                   unlockDate={capsule.unlockDate}
+                  eventDate={capsule.eventDate}
                   tags={capsule.tags}
                   collaborators={capsule.collaborators}
                   shared={capsule.shared}

@@ -267,6 +267,13 @@ export function LockedCapsuleView({
           Your memories are safely preserved and will be revealed when the time comes.
         </p>
 
+        {capsule?.eventDate && (
+          <div className="mb-6 flex items-center justify-center gap-2 text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>Event happened on {new Date(capsule.eventDate).toLocaleDateString()}</span>
+          </div>
+        )}
+
         {isShared && (
           <div className="mb-6">
             <div className="flex items-center justify-center gap-2 text-sm text-pink-700 dark:text-[rgba(255,255,255,0.85)]">

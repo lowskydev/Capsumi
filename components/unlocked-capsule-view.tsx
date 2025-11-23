@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus, X } from "lucide-react"
+import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus, X, Clock } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
@@ -15,6 +15,7 @@ export function UnlockedCapsuleView({
   audios = [],
   createdDate,
   unlockDate,
+  eventDate,
   tags = [],
   shared = false,
   collaborators = [],
@@ -26,6 +27,7 @@ export function UnlockedCapsuleView({
 }: any) {
   const created = new Date(createdDate)
   const unlocked = new Date(unlockDate)
+  const happened = eventDate ? new Date(eventDate) : null
 
   const audioSources = [ ...(Array.isArray(audios) ? audios : []), ...(audioUrl ? [audioUrl] : []) ]
 
@@ -63,7 +65,7 @@ export function UnlockedCapsuleView({
 
       {/** --- METADATA SECTION --- */}
       <Card className="p-6 rounded-2xl shadow-sm bg-muted/20">
-        <div className="grid sm:grid-cols-2 gap-4 text-sm">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>Created:</span>
@@ -75,6 +77,14 @@ export function UnlockedCapsuleView({
             <span>Unlocked:</span>
             <span className="font-medium">{unlocked.toLocaleString()}</span>
           </div>
+
+          {happened && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Event Date:</span>
+              <span className="font-medium">{happened.toLocaleDateString()}</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Images:</span>

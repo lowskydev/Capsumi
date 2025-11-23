@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2, UserPlus } from "lucide-react"
+import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2, UserPlus, Clock } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
@@ -11,6 +11,7 @@ interface CapsuleCardProps {
   title: string
   unlockDate: Date
   createdDate: Date
+  eventDate?: Date
   isLocked: boolean
   previewImage?: string
   contentTypes: readonly ("text" | "image" | "audio")[]
@@ -27,6 +28,7 @@ export function CapsuleCard({
   title,
   unlockDate,
   createdDate,
+  eventDate,
   isLocked,
   previewImage,
   contentTypes = [],
@@ -49,7 +51,7 @@ export function CapsuleCard({
         area is constrained to the remaining space. Content that overflows will be hidden
         / truncated so all cards have the same dimensions without reordering elements.
       */}
-      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-110">
+      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-120">
         {/* Delete Button */}
         {onDelete && (
           <button
@@ -59,7 +61,7 @@ export function CapsuleCard({
               e.stopPropagation()
               onDelete(id)
             }}
-            className="absolute top-2 right-2 z-10 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-80 hover:opacity-100 transition"
+            className="absolute top-2 right-2 z-10 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-80 hover:opacity-100 transition cursor-pointer"
             aria-label="Delete capsule"
           >
             <Trash2 className="w-4 h-4" />
@@ -141,6 +143,12 @@ export function CapsuleCard({
               <Calendar className="w-3.5 h-3.5" />
               <span>Created {createdDate.toLocaleDateString()}</span>
             </div>
+            {eventDate && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Event {eventDate.toLocaleDateString()}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5" />
               <span className="font-medium">Opens {unlockDate.toLocaleDateString()}</span>
