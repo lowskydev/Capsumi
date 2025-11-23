@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -26,6 +27,8 @@ export function DatePicker({
   placeholder = "Pick a date",
   disablePastDates = false 
 }: DatePickerProps) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       weekday: "long",
@@ -36,7 +39,8 @@ export function DatePicker({
   }
 
   return (
-    <Popover>
+    // 2. Bind the state to the Popover
+    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -54,7 +58,10 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={onDateChange}
+          onSelect={(selectedDate) => {
+            onDateChange(selectedDate)
+            setIsCalendarOpen(false)
+          }}
           disabled={disablePastDates ? { before: new Date() } : undefined}
           initialFocus
         />
