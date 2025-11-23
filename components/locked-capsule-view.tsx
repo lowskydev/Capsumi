@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
+import Image from "next/image"
 
 /**
  * LockedCapsuleView (audio + removable tags)
@@ -245,14 +246,15 @@ export function LockedCapsuleView({
         </div>
 
         {previewImage && (
-          <div className="mb-6 relative rounded-2xl overflow-hidden">
-            <img
+          <div className="mb-6 relative h-64 rounded-2xl overflow-hidden">
+            <Image
               src={previewImage || "/placeholder.svg"}
               alt="Capsule preview image (locked and blurred)"
-              className="w-full h-64 object-cover blur-lg"
-              loading="lazy"
+              fill
+              className="object-cover blur-lg"
+              unoptimized={previewImage.startsWith("data:") || previewImage.startsWith("blob:")}
             />
-            <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-background/40 flex items-center justify-center z-10">
               <Badge variant="secondary" className="text-lg px-4 py-2">
                 Preview Hidden
               </Badge>
@@ -342,7 +344,7 @@ export function LockedCapsuleView({
                   <button
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-pointer"
                   >
                     <Upload className="w-4 h-4" /> Choose images
                   </button>
@@ -350,11 +352,17 @@ export function LockedCapsuleView({
                   {localImagePreviews.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mt-3">
                       {localImagePreviews.map((u, i) => (
-                        <div key={i} className="relative rounded-md overflow-hidden">
-                          <img src={u} alt={`preview-${i}`} className="w-full h-20 object-cover" />
+                        <div key={i} className="relative rounded-md overflow-hidden h-20">
+                          <Image
+                            src={u}
+                            alt={`preview-${i}`}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
                           <button
                             onClick={() => removeLocalImage(i)}
-                            className="absolute top-1 right-1 p-1 rounded-full bg-white/80"
+                            className="absolute top-1 right-1 p-1 rounded-full bg-white/80 cursor-pointer"
                             aria-label="Remove image"
                           >
                             <XIcon className="w-3.5 h-3.5" />
@@ -385,7 +393,7 @@ export function LockedCapsuleView({
                   <button
                     type="button"
                     onClick={() => audioInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-pointer"
                   >
                     <Upload className="w-4 h-4" /> Choose audio
                   </button>
@@ -397,7 +405,7 @@ export function LockedCapsuleView({
                           <audio src={u} controls className="w-full" />
                           <button
                             onClick={() => removeLocalAudio(i)}
-                            className="absolute top-1 right-1 p-1 rounded-full bg-white/80"
+                            className="absolute top-1 right-1 p-1 rounded-full bg-white/80 cursor-pointer"
                             aria-label="Remove audio"
                           >
                             <XIcon className="w-3.5 h-3.5" />
@@ -427,7 +435,7 @@ export function LockedCapsuleView({
                       className="flex-1 px-3 py-2 rounded-md border"
                       placeholder="Enter tag and press Enter"
                     />
-                    <button type="button" onClick={handleAddTag} className="px-3 py-2 rounded-md border">
+                    <button type="button" onClick={handleAddTag} className="px-3 py-2 rounded-md border cursor-pointer">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -439,7 +447,7 @@ export function LockedCapsuleView({
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(t)}
-                          className="ml-1 p-0.5 rounded-full hover:bg-muted/20"
+                          className="ml-1 p-0.5 rounded-full hover:bg-muted/20 cursor-pointer"
                           aria-label={`Remove tag ${t}`}
                         >
                           <XIcon className="w-3 h-3" />
@@ -466,7 +474,7 @@ export function LockedCapsuleView({
                     type="button"
                     onClick={handleSaveContributions}
                     disabled={isSaving}
-                    className="px-4 py-2 rounded-md bg-[var(--brand-red)] text-white disabled:opacity-60"
+                    className="px-4 py-2 rounded-md bg-[var(--brand-red)] text-white disabled:opacity-60 cursor-pointer"
                   >
                     {isSaving ? "Saving..." : "Save contributions"}
                   </button>

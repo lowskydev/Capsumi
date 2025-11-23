@@ -4,6 +4,7 @@ import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, Trash2, UserPlus } 
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import Image from "next/image"
 
 interface CapsuleCardProps {
   id: string
@@ -42,8 +43,7 @@ export function CapsuleCard({
 
   return (
     <Link href={`/capsule/${id}`} className="relative block">
-      {/* 
-        Note: to keep the exact content positions you had (preview image on top,
+      {/* Note: to keep the exact content positions you had (preview image on top,
         overlays, then content block), we only enforce a fixed height on the Card root
         and make the card a column flex so the image remains at the top and the content
         area is constrained to the remaining space. Content that overflows will be hidden
@@ -69,10 +69,12 @@ export function CapsuleCard({
         {/* Preview Image (kept at the top, fixed height) */}
         <div className="relative w-full h-48 flex-shrink-0">
           {previewImage ? (
-            <img
+            <Image
               src={previewImage}
               alt={title}
-              className="absolute top-0 left-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
+              unoptimized={previewImage.startsWith("data:") || previewImage.startsWith("blob:")}
             />
           ) : (
             <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
@@ -82,7 +84,7 @@ export function CapsuleCard({
 
           {/* Shared / Collaborators Overlay */}
           {shared && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 z-10">
               <div
                 className="p-2 rounded-full backdrop-blur-sm bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(10,10,10,0.6)] text-pink-600 dark:text-[var(--brand-green)] flex items-center gap-1"
                 title={collaborators.length > 0 ? `Shared with ${collaborators.join(", ")}` : "Shared"}
@@ -96,7 +98,7 @@ export function CapsuleCard({
           )}
 
           {/* Lock Status Overlay */}
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 z-10">
             <div
               className={`p-2 rounded-full backdrop-blur-sm ${
                 isLocked
@@ -110,7 +112,7 @@ export function CapsuleCard({
 
           {/* Days Until Unlock */}
           {isLocked && daysUntilUnlock > 0 && (
-            <div className="absolute bottom-3 left-3">
+            <div className="absolute bottom-3 left-3 z-10">
               <Badge
                 variant="secondary"
                 className="backdrop-blur-sm bg-white/80 dark:bg-[#1a1a1a]/80 border border-gray-200 dark:border-[rgba(243,130,131,0.3)] text-sm font-medium"

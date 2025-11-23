@@ -5,10 +5,11 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Clock, ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 
 export default function LoginPage() {
@@ -46,10 +47,12 @@ export default function LoginPage() {
         <div className="bg-card rounded-3xl p-8 border border-border/50 hover-lift">
           {/* Logo */}
             <div className="flex justify-center mb-8">
-            <img
+            <Image
                 src="/capsumi-logo-color.PNG"
                 alt="Capsumi"
-                className="h-16 w-16 object-contain"
+                width={64}
+                height={64}
+                className="object-contain"
             />
             </div>
 
@@ -101,7 +104,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-muted-foreground">Don&apos;t have an account? </span>
             <Link href="/register" className="text-primary font-medium hover:underline">
               Sign up
             </Link>

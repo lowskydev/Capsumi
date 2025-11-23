@@ -5,10 +5,11 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Clock, ArrowLeft, Loader2, Check } from "lucide-react"
+import { ArrowLeft, Loader2, Check } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 
 export default function RegisterPage() {
@@ -47,10 +48,12 @@ export default function RegisterPage() {
         <div className="bg-card rounded-3xl p-8 border border-border/50 hover-lift">
           {/* Logo */}
             <div className="flex justify-center mb-8">
-            <img
+            <Image
                 src="/capsumi-logo-color.PNG"
                 alt="Capsumi"
-                className="h-16 w-16 object-contain"
+                width={64}
+                height={64}
+                className="object-contain"
             />
             </div>
 

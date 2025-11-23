@@ -5,6 +5,7 @@ import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus, X } from "lucide-r
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 
 /** Redesigned version with an image lightbox & cleaner layout */
 export function UnlockedCapsuleView({
@@ -39,13 +40,18 @@ export function UnlockedCapsuleView({
       {/** --- HEADER PREVIEW IMAGE --- */}
       {previewImage && (
         <Card className="p-0 overflow-hidden rounded-2xl shadow-md">
-          <motion.img
-            src={previewImage}
-            alt="Capsule preview"
-            className="w-full h-64 object-cover"
-            loading="lazy"
+          <motion.div 
+            className="relative w-full h-64"
             whileHover={{ scale: 1.01 }}
-          />
+          >
+            <Image
+              src={previewImage}
+              alt="Capsule preview"
+              fill
+              className="object-cover"
+              unoptimized={previewImage.startsWith("data:") || previewImage.startsWith("blob:")}
+            />
+          </motion.div>
           {(title || description) && (
             <div className="p-4 bg-white/70 backdrop-blur-sm">
               {title && <h2 className="text-xl font-semibold">{title}</h2>}
@@ -143,12 +149,18 @@ export function UnlockedCapsuleView({
             {images.map((src: string, index: number) => (
               <motion.div
                 key={index}
-                className="rounded-xl overflow-hidden relative cursor-pointer"
+                className="rounded-xl overflow-hidden relative cursor-pointer h-64"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => openLightbox(index)}
               >
-                <img src={src} className="w-full h-64 object-cover" />
-                <div className="absolute bottom-0 right-0 m-2 bg-white/80 text-xs px-2 py-1 rounded">
+                <Image
+                  src={src}
+                  alt={`Photo ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  unoptimized={src.startsWith("data:") || src.startsWith("blob:")}
+                />
+                <div className="absolute bottom-0 right-0 m-2 bg-white/80 text-xs px-2 py-1 rounded z-10">
                   #{index + 1}
                 </div>
               </motion.div>
@@ -191,27 +203,32 @@ export function UnlockedCapsuleView({
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="relative max-w-3xl w-full"
+              className="relative max-w-5xl w-full h-full flex items-center justify-center"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
             >
-              <img
-                src={images[lightboxIndex]}
-                className="w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
-              />
+              <div className="relative w-full h-full max-h-[80vh]">
+                <Image
+                  src={images[lightboxIndex]}
+                  alt="Full screen preview"
+                  fill
+                  className="object-contain"
+                  unoptimized={images[lightboxIndex].startsWith("data:") || images[lightboxIndex].startsWith("blob:")}
+                />
+              </div>
 
               <a
                 href={images[lightboxIndex]}
                 download
-                className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded text-sm shadow hover:bg-white"
+                className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded text-sm shadow hover:bg-white z-20"
               >
                 Download
               </a>
 
               <button
                 onClick={closeLightbox}
-                className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow"
+                className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow z-20 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

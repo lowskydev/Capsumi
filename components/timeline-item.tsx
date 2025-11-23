@@ -5,6 +5,7 @@ import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, ArrowRight } from "
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 import type { Capsule } from "@/lib/capsule-storage"
 
 interface Props {
@@ -67,12 +68,13 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
         <div className="flex flex-col md:flex-row h-full">
           {/* Preview Image */}
           {capsule.previewImage ? (
-            <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
-              <img
+            <div className="md:w-64 h-40 md:h-full flex-shrink-0 relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
+              <Image
                 src={capsule.previewImage}
                 alt={capsule.title ?? "Capsule preview"}
-                className="w-full h-full object-cover"
-                loading="lazy"
+                fill
+                className="object-cover"
+                unoptimized={capsule.previewImage.startsWith("data:") || capsule.previewImage.startsWith("blob:")}
               />
             </div>
           ) : (

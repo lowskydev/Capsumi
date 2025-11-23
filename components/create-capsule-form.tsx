@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
 import { DatePicker } from "@/components/date-picker"
@@ -216,7 +217,7 @@ export function CreateCapsuleForm() {
               id="unlockImmediately"
               checked={unlockImmediately}
               onChange={(e) => setUnlockImmediately(e.target.checked)}
-              className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+              className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary cursor-pointer"
             />
             <Label htmlFor="unlockImmediately" className="text-sm cursor-pointer">
               <span className="font-medium">Unlock immediately</span>
@@ -257,7 +258,7 @@ export function CreateCapsuleForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="hover:bg-background/50 rounded-full p-0.5"
+                      className="hover:bg-background/50 rounded-full p-0.5 cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -309,7 +310,7 @@ export function CreateCapsuleForm() {
                       <button
                         type="button"
                         onClick={() => handleRemoveShare(s)}
-                        className="hover:bg-background/50 rounded-full p-0.5"
+                        className="hover:bg-background/50 rounded-full p-0.5 cursor-pointer"
                         aria-label={`Remove ${s}`}
                       >
                         <X className="w-3 h-3" />
@@ -329,7 +330,7 @@ export function CreateCapsuleForm() {
                     name="permission"
                     checked={!allowContributors}
                     onChange={() => setAllowContributors(false)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 cursor-pointer"
                   />
                   <span className="text-sm">View only</span>
                 </label>
@@ -339,7 +340,7 @@ export function CreateCapsuleForm() {
                     name="permission"
                     checked={allowContributors}
                     onChange={() => setAllowContributors(true)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 cursor-pointer"
                   />
                   <span className="text-sm">Add people (can contribute)</span>
                 </label>
@@ -400,16 +401,18 @@ export function CreateCapsuleForm() {
           {imagePreviewUrls.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
               {imagePreviewUrls.map((url, index) => (
-                <div key={index} className="relative group">
-                  <img
+                <div key={index} className="relative group w-full h-32">
+                  <Image
                     src={url}
                     alt={`Upload ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
+                    fill
+                    className="object-cover rounded-lg"
+                    unoptimized
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
-                    className="absolute top-2 right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -452,7 +455,7 @@ export function CreateCapsuleForm() {
               <button
                 type="button"
                 onClick={() => setAudio(null)}
-                className="p-1.5 hover:bg-background rounded-full transition-colors"
+                className="p-1.5 hover:bg-background rounded-full transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
