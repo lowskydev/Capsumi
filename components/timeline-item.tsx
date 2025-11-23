@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, ArrowRight } from "lucide-react"
+import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, ArrowRight, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 import type { Capsule } from "@/lib/capsule-storage"
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className = "" }: Props) {
   const createdDate = useMemo(() => (capsule.createdDate ? new Date(capsule.createdDate) : null), [capsule.createdDate])
   const unlockDate = useMemo(() => (capsule.unlockDate ? new Date(capsule.unlockDate) : null), [capsule.unlockDate])
+  const eventDate = useMemo(() => (capsule.eventDate ? new Date(capsule.eventDate) : null), [capsule.eventDate])
   const now = useMemo(() => new Date(), [])
 
   const isLocked =
@@ -67,12 +69,13 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
         <div className="flex flex-col md:flex-row h-full">
           {/* Preview Image */}
           {capsule.previewImage ? (
-            <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
-              <img
+            <div className="md:w-64 h-40 md:h-full flex-shrink-0 relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
+              <Image
                 src={capsule.previewImage}
                 alt={capsule.title ?? "Capsule preview"}
-                className="w-full h-full object-cover"
-                loading="lazy"
+                fill
+                className="object-cover"
+                unoptimized={capsule.previewImage.startsWith("data:") || capsule.previewImage.startsWith("blob:")}
               />
             </div>
           ) : (
@@ -96,6 +99,12 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
                     <div className="flex items-center gap-1.5 truncate">
                       <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">Created {createdDate.toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {eventDate && (
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">Event {eventDate.toLocaleDateString()}</span>
                     </div>
                   )}
                   {unlockDate && (

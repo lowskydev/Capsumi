@@ -6,6 +6,7 @@ export interface Capsule {
   description?: string
   unlockDate: Date
   createdDate: Date
+  eventDate?: Date           // New field for when the memory/event happened
   isLocked: boolean
   previewImage?: string
   textContent?: string
@@ -35,6 +36,7 @@ export class CapsuleStorage {
         ...c,
         unlockDate: new Date(c.unlockDate),
         createdDate: new Date(c.createdDate),
+        eventDate: c.eventDate ? new Date(c.eventDate) : undefined,
       }))
     } catch (error) {
       console.error('Error loading capsules:', error)
