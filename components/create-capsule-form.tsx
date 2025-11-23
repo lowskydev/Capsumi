@@ -21,7 +21,7 @@ export function CreateCapsuleForm() {
   
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined) // Changed type
+  const [unlockDate, setUnlockDate] = useState<Date | undefined>(undefined)
   const [textContent, setTextContent] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
@@ -86,8 +86,7 @@ export function CreateCapsuleForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate unlock date is selected
-    if (!unlockDate) {
+    if (!unlockDate && !unlockImmediately) {
       alert("Please select an unlock date")
       return
     }
@@ -119,9 +118,8 @@ export function CreateCapsuleForm() {
         })
       }
 
-      const isLocked = unlockImmediately ? false : unlockDate > new Date()
+      const isLocked = unlockImmediately ? false : (unlockDate && unlockDate > new Date())
 
-      // include new sharing fields. we cast to an extended type to avoid TS errors when lib type isn't updated yet
       const newCapsule: Capsule & {
         shared?: boolean
         collaborators?: string[]
@@ -130,17 +128,15 @@ export function CreateCapsuleForm() {
         id: `capsule_${Date.now()}`,
         title,
         description: description || undefined,
-        unlockDate,
+        unlockDate: unlockImmediately ? new Date() : unlockDate!,
         createdDate: new Date(),
-        isLocked,
+        isLocked: !!isLocked,
         previewImage: imageUrls[0] || undefined,
         textContent: textContent || undefined,
         images: imageUrls.length > 0 ? imageUrls : undefined,
         audioUrl,
         contentTypes: contentTypes as readonly ("text" | "image" | "audio")[],
         tags: tags.length > 0 ? tags : undefined,
-
-        // sharing-related fields:
         shared: sharedWith.length > 0,
         collaborators: sharedWith.length > 0 ? sharedWith : undefined,
         allowContributors: sharedWith.length > 0 ? allowContributors : undefined,
@@ -205,7 +201,8 @@ export function CreateCapsuleForm() {
                 date={unlockDate}
                 onDateChange={setUnlockDate}
                 placeholder="Choose when to unlock this capsule"
-                disablePastDates={true}
+                minDate={new Date()} // Prevents picking past dates
+                disabled={unlockImmediately}
               />
             </div>
             <p className="text-sm text-muted-foreground mt-1.5">
@@ -229,6 +226,7 @@ export function CreateCapsuleForm() {
             </Label>
           </div>
 
+          {/* Tags Section */}
           <div>
             <Label htmlFor="tags" className="text-base">
               Tags
@@ -343,7 +341,7 @@ export function CreateCapsuleForm() {
                     onChange={() => setAllowContributors(true)}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">Add people (can contribute images/photos)</span>
+                  <span className="text-sm">Add people (can contribute)</span>
                 </label>
               </div>
             </div>

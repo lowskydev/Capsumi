@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
 import { Calendar as CalendarIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -17,7 +16,11 @@ interface DatePickerProps {
   onDateChange: (date: Date | undefined) => void
   disabled?: boolean
   placeholder?: string
-  disablePastDates?: boolean
+  /** If provided, dates before this will be disabled */
+  minDate?: Date
+  /** If provided, dates after this will be disabled */
+  maxDate?: Date
+  className?: string
 }
 
 export function DatePicker({ 
@@ -25,28 +28,34 @@ export function DatePicker({
   onDateChange, 
   disabled, 
   placeholder = "Pick a date",
-  disablePastDates = false 
+  minDate,
+  maxDate,
+  className
 }: DatePickerProps) {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = React.useState(false)
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
-      weekday: "long",
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     })
   }
 
+  // Construct the disabled matcher for react-day-picker
+  const disabledDays = []
+  if (minDate) disabledDays.push({ before: minDate })
+  if (maxDate) disabledDays.push({ after: maxDate })
+
   return (
-    // 2. Bind the state to the Popover
     <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
           className={cn(
             "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            className
           )}
           disabled={disabled}
         >
@@ -62,8 +71,9 @@ export function DatePicker({
             onDateChange(selectedDate)
             setIsCalendarOpen(false)
           }}
-          disabled={disablePastDates ? { before: new Date() } : undefined}
+          disabled={disabledDays}
           initialFocus
+          defaultMonth={date || minDate} 
         />
       </PopoverContent>
     </Popover>
