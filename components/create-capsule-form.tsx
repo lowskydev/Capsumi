@@ -215,20 +215,20 @@ export function CreateCapsuleForm() {
             </div>
 
             <div>
-              <Label className="text-base flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Event Happened Date
-              </Label>
-              <div className="mt-2">
-                <DatePicker
-                  date={eventDate}
-                  onDateChange={setEventDate}
-                  placeholder="When did this memory happen?"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-1.5">
-                Optional: The actual date of the memory/event
-              </p>
+                <Label className="text-base flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Event Date
+                </Label>
+                <div className="mt-2">
+                  <DatePicker
+                    date={eventDate}
+                    onDateChange={setEventDate}
+                    placeholder="When does or did this event take place?"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  Specify when this memory or planned event takes/will take place
+                </p>
             </div>
           </div>
 
