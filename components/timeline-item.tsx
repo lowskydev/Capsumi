@@ -20,6 +20,9 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
   const eventDate = useMemo(() => (capsule.eventDate ? new Date(capsule.eventDate) : null), [capsule.eventDate])
   const now = useMemo(() => new Date(), [])
 
+  const brandRed = "#f38283"
+  const brandGreen = "#62cf91"
+
   const isLocked =
     typeof capsule.isLocked === "boolean"
       ? capsule.isLocked
@@ -38,7 +41,7 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
 
   return (
     <div
-      className={`relative pl-8 pt-12 group ${className} last:mb-0`} // padding top instead of margin bottom for spacing
+      className={`relative pl-8 pt-12 group ${className} last:mb-0`}
     >
       {/* Timeline vertical line */}
       <div
@@ -74,9 +77,14 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
                 src={capsule.previewImage}
                 alt={capsule.title ?? "Capsule preview"}
                 fill
-                className="object-cover"
+                className={`object-cover transition duration-300 ${isLocked ? "blur-lg grayscale" : ""}`}
                 unoptimized={capsule.previewImage.startsWith("data:") || capsule.previewImage.startsWith("blob:")}
               />
+              {isLocked && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <Lock className="w-10 h-10 text-red-500 opacity-80" />
+                </div>
+              )}
             </div>
           ) : (
             <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-muted/5 flex items-center justify-center">
@@ -110,7 +118,11 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
                   {unlockDate && (
                     <div className="flex items-center gap-1.5 font-medium truncate">
                       <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">Opens {unlockDate.toLocaleDateString()}</span>
+                      {isLocked ? (
+                        <span className="truncate">Opens {unlockDate.toLocaleDateString()}</span>
+                      ) : (
+                        <span className="truncate">Opened on {unlockDate.toLocaleDateString()}</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -121,7 +133,12 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
                 {isLocked && daysUntilUnlock !== null && daysUntilUnlock > 0 && (
                   <Badge
                     variant="secondary"
-                    className="text-xs px-2 py-1 bg-[var(--brand-green)] text-white dark:bg-[var(--brand-green)] dark:text-white"
+                    className="text-xs px-2 py-1"
+                    style={{
+                      background: brandGreen,
+                      color: "white",
+                      borderColor: brandGreen,
+                    }}
                   >
                     {daysUntilUnlock}d
                   </Badge>
@@ -129,9 +146,27 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
                 {!isLocked && (
                   <Badge
                     variant="outline"
-                    className="text-xs px-2 py-1 bg-accent/10 text-accent-foreground border-accent/20 dark:bg-[var(--brand-green)] dark:text-white dark:border-[rgba(98,207,145,0.06)]"
+                    className="text-xs px-2 py-1"
+                    style={{
+                      background: brandGreen,
+                      color: "white",
+                      borderColor: brandGreen,
+                    }}
                   >
                     Unlocked
+                  </Badge>
+                )}
+                {isLocked && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs px-2 py-1 mt-1"
+                    style={{
+                      background: brandRed,
+                      color: "white",
+                      borderColor: brandRed,
+                    }}
+                  >
+                    Locked
                   </Badge>
                 )}
               </div>
