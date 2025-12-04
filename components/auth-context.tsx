@@ -24,11 +24,13 @@ interface AuthContextType {
   isAuthenticated: boolean
   updateUser: (updates: Partial<User>) => Promise<void>
   refreshStats: () => void
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const STORAGE_KEY = 'capsumi_user'
+const PASSWORD_KEY = 'capsumi_password'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -109,6 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get real stats from stored capsules
     const stats = getCurrentStats()
     
+    // Mock password save
+    localStorage.setItem(PASSWORD_KEY, password)
+    
     const userData: User = {
       id: "1",
       name: "Alex Morgan",
@@ -126,6 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     
+    // Mock password save
+    localStorage.setItem(PASSWORD_KEY, password)
+
     const userData: User = {
       id: "1",
       name,
@@ -151,9 +159,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
   }
 
+  // Change password logic: Current version validates old password stored in localStorage
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    // Simulate network/API latency
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    const storedPassword = localStorage.getItem(PASSWORD_KEY) || ""
+    if (!storedPassword) {
+      throw new Error("No existing password to compare.")
+    }
+    if (currentPassword !== storedPassword) {
+      throw new Error("Current password is incorrect.")
+    }
+    // Save new password
+    localStorage.setItem(PASSWORD_KEY, newPassword)
+    // In a real app, call backend API and handle accordingly.
+    return
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(PASSWORD_KEY)
   }
 
   if (isLoading) {
@@ -174,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateUser,
         refreshStats,
         isAuthenticated: !!user,
+        changePassword,
       }}
     >
       {children}

@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 
 export default function ProfilePage() {
-  const { user, updateUser, logout } = useAuth()
+  const { user, updateUser, logout, changePassword } = useAuth()
   const router = useRouter()
   const [name, setName] = useState(user?.name || "")
   const [email, setEmail] = useState(user?.email || "")
@@ -20,11 +20,75 @@ export default function ProfilePage() {
   const [reminderNotifications, setReminderNotifications] = useState(true)
   const [publicProfile, setPublicProfile] = useState(false)
 
+  // FEEDBACK STATE
+  const [status, setStatus] = useState<null | "success" | "error">(null)
+  const [errorMsg, setErrorMsg] = useState("")
+
+  // CHANGE PASSWORD STATES
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [pwStatus, setPwStatus] = useState<null | "success" | "error">(null)
+  const [pwErrorMsg, setPwErrorMsg] = useState("")
+
+  // Handle profile save
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateUser({ name, email })
+    setStatus(null)
+    setErrorMsg('')
+    try {
+      await updateUser({ name, email })
+      setStatus("success")
+      setTimeout(() => setStatus(null), 4000)
+    } catch (err: any) {
+      setStatus("error")
+      setErrorMsg(err?.message || "Failed to save changes. Please try again.")
+      setTimeout(() => setStatus(null), 5000)
+    }
   }
 
+  // Handle password change
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPwStatus(null)
+    setPwErrorMsg("")
+    // Simple validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPwStatus("error")
+      setPwErrorMsg("Please fill in all fields.")
+      return
+    }
+    if (newPassword.length < 8) {
+      setPwStatus("error")
+      setPwErrorMsg("New password must be at least 8 characters.")
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwStatus("error")
+      setPwErrorMsg("New passwords do not match.")
+      return
+    }
+    // Assume changePassword returns a promise; update with your own logic
+    try {
+      if (typeof changePassword === "function") {
+        await changePassword(currentPassword, newPassword)
+      } else {
+        // fallback mock, remove in production!
+        await new Promise(res => setTimeout(res, 1000))
+      }
+      setPwStatus("success")
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+      setTimeout(() => setPwStatus(null), 4000)
+    } catch (err: any) {
+      setPwStatus("error")
+      setPwErrorMsg(err?.message || "Failed to change password. Please try again.")
+      setTimeout(() => setPwStatus(null), 5000)
+    }
+  }
+
+  // Logout
   const handleLogout = () => {
     logout()
     router.push("/")
@@ -93,12 +157,74 @@ export default function ProfilePage() {
                     className="mt-2"
                   />
                 </div>
-                <div className="flex gap-3 pt-2">
+                {(status === "success") && (
+                  <div className="text-sm rounded-lg p-3 bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700 mt-1">
+                    Changes saved successfully!
+                  </div>
+                )}
+                {(status === "error") && (
+                  <div className="text-sm rounded-lg p-3 bg-red-100 text-red-700 border border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700 mt-1">
+                    {errorMsg}
+                  </div>
+                )}
+                <div className="flex pt-2">
                   <Button type="submit" className="bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground rounded-xl cursor-pointer">
                     Save Changes
                   </Button>
-                  <Button type="button" variant="outline" className="rounded-xl border-primary text-primary hover:bg-primary/10 cursor-pointer">
-                    Cancel
+                </div>
+              </form>
+            </Card>
+
+            {/* Change Password */}
+            <Card className="p-6 border-0 shadow-md bg-card">
+              <h3 className="text-xl font-semibold mb-6 text-primary">Change Password</h3>
+              <form onSubmit={handleChangePassword} className="space-y-5">
+                <div>
+                  <Label htmlFor="current-password">Current Password</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                {(pwStatus === "success") && (
+                  <div className="text-sm rounded-lg p-3 bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700 mt-1">
+                    Password changed successfully!
+                  </div>
+                )}
+                {(pwStatus === "error") && (
+                  <div className="text-sm rounded-lg p-3 bg-red-100 text-red-700 border border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700 mt-1">
+                    {pwErrorMsg}
+                  </div>
+                )}
+                <div className="flex pt-2">
+                  <Button type="submit" className="bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground rounded-xl cursor-pointer">
+                    Change Password
                   </Button>
                 </div>
               </form>
