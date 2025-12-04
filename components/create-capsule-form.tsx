@@ -39,6 +39,8 @@ export function CreateCapsuleForm() {
   const [allowContributors, setAllowContributors] = useState(false)
   // Error state for sharing input
   const [shareError, setShareError] = useState("")
+  // Error state for capsule meaningful content validation (NEW for problem 12)
+  const [capsuleError, setCapsuleError] = useState("")
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -108,7 +110,23 @@ export function CreateCapsuleForm() {
       alert("Please select an unlock date")
       return
     }
-    
+
+    // NEW REQUIRED FIELD VALIDATION FOR PROBLEM 12:
+    if (
+      !description.trim() &&
+      !textContent.trim() &&
+      images.length === 0 &&
+      audio === null &&
+      sharedWith.length === 0
+    ) {
+      setCapsuleError(
+        "Please add at least one description, message, media (image/audio), or collaborator before creating the capsule."
+      )
+      return;
+    } else {
+      setCapsuleError("")
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -374,7 +392,7 @@ export function CreateCapsuleForm() {
                     onChange={() => setAllowContributors(false)}
                     className="w-4 h-4 cursor-pointer"
                   />
-                  <span className="text-sm">View only</span>
+                  <span className="text-sm">View Only</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -384,7 +402,7 @@ export function CreateCapsuleForm() {
                     onChange={() => setAllowContributors(true)}
                     className="w-4 h-4 cursor-pointer"
                   />
-                  <span className="text-sm">Add people (can contribute)</span>
+                  <span className="text-sm">Collaborator (can contribute & invite)</span>
                 </label>
               </div>
             </div>
@@ -505,6 +523,11 @@ export function CreateCapsuleForm() {
           )}
         </div>
       </Card>
+
+      {/* Capsule error message for empty content (PROBLEM 12) just above submit buttons */}
+      {capsuleError && (
+        <div className="text-red-500 text-sm text-center mb-4">{capsuleError}</div>
+      )}
 
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">
