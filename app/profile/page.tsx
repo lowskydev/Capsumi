@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth-context"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
+import Footer from "@/components/footer"
 
 export default function ProfilePage() {
   const { user, updateUser, logout, changePassword } = useAuth()
@@ -286,6 +287,9 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

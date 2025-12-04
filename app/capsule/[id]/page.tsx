@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge"
 import { Trash2, Lock, Unlock } from "lucide-react"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
+import Footer from "@/components/footer";
+
 
 export default function CapsuleDetailPage() {
   const params = useParams()
@@ -154,6 +156,9 @@ export default function CapsuleDetailPage() {
           </section>
         </div>
       </main>
+        <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

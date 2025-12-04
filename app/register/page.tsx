@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Loader2, Check } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
+import Footer from "@/components/footer"
 
 export default function RegisterPage() {
   const router = useRouter()

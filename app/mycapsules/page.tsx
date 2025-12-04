@@ -9,6 +9,7 @@ import { Plus } from "lucide-react"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
 import { AdvancedSearchBar, type DateMode, type FilterStatus } from "@/components/advanced-search-bar"
+import Footer from "@/components/footer"
 
 export default function MyCapsulesPage() {
   const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
@@ -163,6 +164,9 @@ export default function MyCapsulesPage() {
           )}
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

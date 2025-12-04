@@ -2,6 +2,7 @@
 
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { CreateCapsuleForm } from "@/components/create-capsule-form"
+import Footer from "@/components/footer"
 
 export default function CreatePage() {
   return (
@@ -24,6 +25,9 @@ export default function CreatePage() {
           </div>
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

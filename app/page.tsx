@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Clock, Lock, Share2, Sparkles, ArrowRight, Check, ImageIcon, Music, FileText, Calendar } from "lucide-react"
+import Footer from "@/components/footer"
 
 export default function LandingPage() {
   return (
@@ -213,13 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-12">
-        <div className="px-4">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-            <p className="text-sm text-muted-foreground">© 2025 Capsumi. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

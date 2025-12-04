@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { TimelineItem } from "@/components/timeline-item"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { AdvancedSearchBar, type DateMode, type FilterStatus } from "@/components/advanced-search-bar"
+import Footer from "@/components/footer"
 
 export default function TimelinePage() {
   const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
@@ -153,6 +154,9 @@ export default function TimelinePage() {
           )}
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

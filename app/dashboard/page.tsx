@@ -30,6 +30,7 @@ import {
 } from "chart.js"
 import { Line } from "react-chartjs-2"
 import "chartjs-adapter-date-fns"
+import Footer from "@/components/footer"
 
 ChartJS.register(
   CategoryScale,
@@ -313,6 +314,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+        <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }
