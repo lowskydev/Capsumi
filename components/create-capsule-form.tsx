@@ -37,6 +37,8 @@ export function CreateCapsuleForm() {
   const [sharedWith, setSharedWith] = useState<string[]>([])
   const [currentShare, setCurrentShare] = useState("")
   const [allowContributors, setAllowContributors] = useState(false)
+  // Error state for sharing input
+  const [shareError, setShareError] = useState("")
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -49,12 +51,26 @@ export function CreateCapsuleForm() {
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
+  // Validation function for share inputs
+  function isValidEmailOrUsername(input: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const usernameRegex = /^@[A-Za-z0-9_]+$/
+    return emailRegex.test(input) || usernameRegex.test(input)
+  }
+
   const handleAddShare = () => {
     const trimmed = currentShare.trim()
     if (!trimmed) return
+
+    if (!isValidEmailOrUsername(trimmed)) {
+      setShareError("Enter a valid email address (alice@example.com) or username (start with '@').")
+      return
+    }
+
     if (!sharedWith.includes(trimmed)) {
       setSharedWith([...sharedWith, trimmed])
       setCurrentShare("")
+      setShareError("") // clear on success
     }
   }
 
@@ -215,20 +231,20 @@ export function CreateCapsuleForm() {
             </div>
 
             <div>
-                <Label className="text-base flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Event Date
-                </Label>
-                <div className="mt-2">
-                  <DatePicker
-                    date={eventDate}
-                    onDateChange={setEventDate}
-                    placeholder="When does or did this event take place?"
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mt-1.5">
-                  Specify when this memory or planned event takes/will take place
-                </p>
+              <Label className="text-base flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Event Date
+              </Label>
+              <div className="mt-2">
+                <DatePicker
+                  date={eventDate}
+                  onDateChange={setEventDate}
+                  placeholder="When does or did this event take place?"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                Optional: Specify when this memory or planned event takes/will take place
+              </p>
             </div>
           </div>
 
@@ -309,7 +325,10 @@ export function CreateCapsuleForm() {
               <div className="flex gap-2 mt-2">
                 <Input
                   value={currentShare}
-                  onChange={(e) => setCurrentShare(e.target.value)}
+                  onChange={(e) => {
+                    setCurrentShare(e.target.value)
+                    setShareError("") // Clear error when typing
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault()
@@ -322,7 +341,9 @@ export function CreateCapsuleForm() {
                   Add
                 </Button>
               </div>
-
+              {shareError && (
+                <div className="text-red-500 text-xs mt-1">{shareError}</div>
+              )}
               {sharedWith.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
                   {sharedWith.map((s) => (
