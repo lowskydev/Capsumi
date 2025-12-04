@@ -75,12 +75,18 @@ export function CapsuleCard({
               src={previewImage}
               alt={title}
               fill
-              className="object-cover"
+              className={`object-cover transition duration-300 ${isLocked ? "blur-lg grayscale" : ""}`}
               unoptimized={previewImage.startsWith("data:") || previewImage.startsWith("blob:")}
             />
           ) : (
             <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
               <div className="text-6xl opacity-20">📦</div>
+            </div>
+          )}
+          {/* If locked, show a small 'Locked' overlay over the blurred image */}
+          {isLocked && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Lock className="w-10 h-10 text-blue-500 opacity-80" />
             </div>
           )}
 
