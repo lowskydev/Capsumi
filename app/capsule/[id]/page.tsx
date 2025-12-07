@@ -49,7 +49,7 @@ export default function CapsuleDetailPage() {
     return (
       <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
         <DashboardSidebar />
-        <main className="flex-1 lg:ml-64 p-6 transition-all duration-300 flex items-center justify-center w-full">
+        <main className="flex-1 min-w-0 lg:ml-64 p-6 transition-all duration-300 flex items-center justify-center w-full">
           <div className="text-center">
             <p className="text-2xl font-semibold text-primary mb-6">Capsule not found.</p>
             <Button onClick={() => router.push("/mycapsules")} className="bg-primary text-primary-foreground hover:opacity-90 px-6 py-3 rounded-lg shadow-md cursor-pointer">
@@ -65,7 +65,7 @@ export default function CapsuleDetailPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 min-w-0 p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-5xl mx-auto py-6 md:py-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
             <div className="flex flex-col gap-3 flex-1 min-w-0">

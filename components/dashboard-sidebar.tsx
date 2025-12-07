@@ -24,8 +24,8 @@ function SidebarContent() {
   const { logout } = useAuth()
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="absolute top-6 left-6">
+    <div className="flex flex-col min-h-full w-full relative">
+      <div className="absolute top-6 left-6 z-10">
         <Button
           variant="ghost"
           size="icon"
@@ -106,14 +106,15 @@ export function DashboardSidebar() {
     setIsOpen(false)
   }, [pathname])
 
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
     }
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
     }
   }, [isOpen])
 
@@ -154,9 +155,9 @@ export function DashboardSidebar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed top-0 left-0 bottom-0 w-64 bg-background z-[70] lg:hidden border-r shadow-2xl p-6"
+              className="fixed top-0 left-0 bottom-0 w-64 bg-background z-[70] lg:hidden border-r shadow-2xl p-6 overflow-y-auto"
             >
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 z-20">
                 <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="cursor-pointer">
                   <X className="h-5 w-5" />
                 </Button>
@@ -169,7 +170,7 @@ export function DashboardSidebar() {
 
       <aside
         className={cn(
-          "hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 p-6 z-40 border-r backdrop-blur-xl shadow-lg transition-colors duration-300",
+          "hidden lg:block fixed top-0 left-0 h-screen w-64 p-6 z-40 border-r backdrop-blur-xl shadow-lg transition-colors duration-300 overflow-y-auto",
           "bg-background/95 border-border"
         )}
       >

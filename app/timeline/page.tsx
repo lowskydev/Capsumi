@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Card } from "@/components/ui/card"
 import { TimelineItem } from "@/components/timeline-item"
@@ -101,7 +101,7 @@ export default function TimelinePage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 min-w-0 p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-6xl mx-auto space-y-6">
           <header className="mb-4">
             <h1 className="text-3xl font-bold text-primary">Timeline</h1>

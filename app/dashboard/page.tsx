@@ -194,7 +194,7 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 p-4 lg:p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 min-w-0 p-4 lg:p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 lg:mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-primary">Dashboard</h1>

@@ -93,7 +93,7 @@ export default function ProfilePage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
+      <main className="flex-1 min-w-0 p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
         <div className="w-full max-w-4xl py-6 md:py-10">
           <div className="mb-10">
             <h1 className="text-4xl font-bold mb-2 text-primary">Profile Settings</h1>
