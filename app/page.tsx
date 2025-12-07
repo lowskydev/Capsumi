@@ -51,17 +51,9 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="rounded-2xl text-lg h-14 px-8 hover-lift">
               <Link href="/register">
-                Start Creating Free
+                Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              asChild
-              className="rounded-2xl text-lg h-14 px-8 hover-lift bg-transparent"
-            >
-              <Link href="/login">Sign In</Link>
             </Button>
           </div>
         </div>
@@ -206,7 +198,7 @@ export default function LandingPage() {
           </div>
           <Button size="lg" asChild className="rounded-2xl text-lg h-14 px-8 hover-lift">
             <Link href="/register">
-              Create Your First Capsule
+              Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
