@@ -10,6 +10,7 @@ import type { Collaborator } from "@/lib/capsule-storage"
 interface CapsuleCardProps {
   id: string
   title: string
+  description?: string
   unlockDate: Date
   createdDate: Date
   eventDate?: Date
@@ -27,6 +28,7 @@ interface CapsuleCardProps {
 export function CapsuleCard({
   id,
   title,
+  description,
   unlockDate,
   createdDate,
   eventDate,
@@ -143,9 +145,15 @@ export function CapsuleCard({
         {/* Card Content */}
         {/* make this the flex-1 area and hide overflow so card height remains fixed */}
         <div className="p-5 flex-1 overflow-hidden">
-          <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-2 group-hover:text-[var(--brand-red)] transition-colors">
+          <h3 className="font-semibold text-lg mb-1 text-gray-900 dark:text-white line-clamp-2 group-hover:text-[var(--brand-red)] transition-colors">
             {title}
           </h3>
+
+          {description && (
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-snug">
+              {description}
+            </p>
+          )}
 
           {/* Dates */}
           <div className="space-y-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
