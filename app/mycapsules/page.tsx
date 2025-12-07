@@ -55,7 +55,10 @@ export default function MyCapsulesPage() {
       const q = personQuery.toLowerCase()
       result = result.filter(c => {
         if (!c.collaborators || c.collaborators.length === 0) return false
-        return c.collaborators.some(col => col.toLowerCase().includes(q))
+        return c.collaborators.some(col => {
+            const email = typeof col === 'string' ? col : col.email
+            return email.toLowerCase().includes(q)
+        })
       })
     }
 

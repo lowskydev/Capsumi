@@ -1,5 +1,10 @@
 "use client"
 
+export interface Collaborator {
+  email: string
+  role: "viewer" | "editor"
+}
+
 export interface Capsule {
   id: string
   title: string
@@ -18,7 +23,7 @@ export interface Capsule {
 
   // New sharing / collaboration fields
   shared?: boolean                 // true when capsule is shared with others
-  collaborators?: string[]         // list of emails/usernames this capsule is shared with
+  collaborators?: (string | Collaborator)[]         // list of emails/usernames this capsule is shared with
   allowContributors?: boolean      // when true, collaborators can add images/audios/tags/messages
 }
 

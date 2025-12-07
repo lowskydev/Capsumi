@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
+import type { Collaborator } from "@/lib/capsule-storage"
 
 interface CapsuleCardProps {
   id: string
@@ -18,7 +19,7 @@ interface CapsuleCardProps {
   tags?: string[]
   // optional sharing fields (new)
   shared?: boolean
-  collaborators?: string[]
+  collaborators?: (string | Collaborator)[]
   allowContributors?: boolean
   onDelete?: (id: string) => void
 }
@@ -42,6 +43,9 @@ export function CapsuleCard({
 
   const brandRed = "#f38283"
   const brandGreen = "#62cf91"
+
+  // Handle both string[] and Collaborator[] for backward compatibility
+  const collaboratorNames = collaborators.map(c => typeof c === 'string' ? c : c.email).join(", ")
 
   return (
     <Link href={`/capsule/${id}`} className="relative block">
@@ -95,7 +99,7 @@ export function CapsuleCard({
             <div className="absolute top-3 left-3 z-10">
               <div
                 className="p-2 rounded-full backdrop-blur-sm bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(10,10,10,0.6)] text-pink-600 dark:text-[var(--brand-green)] flex items-center gap-1"
-                title={collaborators.length > 0 ? `Shared with ${collaborators.join(", ")}` : "Shared"}
+                title={collaborators.length > 0 ? `Shared with: ${collaboratorNames}` : "Shared"}
               >
                 <UserPlus className="w-4 h-4" />
                 {collaborators.length > 0 && (

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import type { Collaborator } from "@/lib/capsule-storage"
 
 /** Redesigned version with an image lightbox & cleaner layout */
 export function UnlockedCapsuleView({
@@ -121,18 +122,20 @@ export function UnlockedCapsuleView({
       {/** --- SHARED WITH --- */}
       {shared && collaborators.length > 0 && (
         <Card className="p-4 rounded-2xl shadow-sm bg-muted/20">
-          <p className="text-sm text-muted-foreground">
-            Shared with{" "}
-            {collaborators.map((c: string, idx: number) => {
-              const display = c.includes("@") ? c : `@${c}`
+          <div className="text-sm text-muted-foreground">
+            <span className="font-semibold block mb-1">Shared with:</span>
+            {collaborators.map((c: string | Collaborator, idx: number) => {
+              const email = typeof c === 'string' ? c : c.email
+              const role = typeof c === 'object' ? ` (${c.role})` : ''
+              const display = email.includes("@") ? email : `@${email}`
               return (
-                <span key={c}>
-                  {display}
+                <span key={email}>
+                  {display}{role}
                   {idx < collaborators.length - 1 ? ", " : ""}
                 </span>
               )
             })}
-          </p>
+          </div>
         </Card>
       )}
 

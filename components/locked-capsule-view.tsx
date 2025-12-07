@@ -86,25 +86,17 @@ export function LockedCapsuleView({
 
   const isShared = !!(capsule && (capsule.shared || (capsule.collaborators && capsule.collaborators.length > 0)))
   const collaborators = capsule?.collaborators ?? []
-  const allowContributors = !!capsule?.allowContributors
-
-  const isCollaborator =
-    !!currentUserIdentifier && Array.isArray(collaborators)
-      ? collaborators.includes(currentUserIdentifier)
-      : false
-
-  const contributorAllowed = isCollaborator && allowContributors
-
-  // debug log to help verify identity/permissions
-  useEffect(() => {
-    console.debug("LockedCapsuleView debug:", {
-      currentUserIdentifier,
-      collaborators,
-      allowContributors,
-      isCollaborator,
-      contributorAllowed,
-    })
-  }, [currentUserIdentifier, collaborators, allowContributors, isCollaborator, contributorAllowed])
+  
+  // Permission Logic
+  const collaboratorRecord = collaborators.find(c => 
+    typeof c === 'string' ? c === currentUserIdentifier : c.email === currentUserIdentifier
+  )
+  const isCollaborator = !!collaboratorRecord
+  
+  // Check permission: explicitly 'editor' OR legacy global 'allowContributors'
+  const canContribute = typeof collaboratorRecord === 'object' 
+    ? collaboratorRecord.role === 'editor' 
+    : !!capsule?.allowContributors
 
   // select handlers (use refs for robust file picker opening)
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +148,7 @@ export function LockedCapsuleView({
       return
     }
 
-    if (!contributorAllowed) {
+    if (!canContribute) {
       setStatusText("You don't have permission to contribute to this capsule.")
       console.debug("Save blocked: contributorAllowed false")
       return
@@ -236,6 +228,9 @@ export function LockedCapsuleView({
     }
   }
 
+  const collaboratorCount = collaborators.length
+  const collabNames = collaborators.map(c => typeof c === 'string' ? c : c.email).join(", ")
+
   return (
     <Card className="p-8 md:p-12 text-center">
       <div className="max-w-2xl mx-auto">
@@ -280,10 +275,14 @@ export function LockedCapsuleView({
               <UserPlus className="w-4 h-4" />
               <span>
                 Shared with{" "}
-                <strong className="font-medium">{collaborators.length > 0 ? collaborators.join(", ") : "people"}</strong>
+                <strong className="font-medium" title={collabNames}>
+                  {collaboratorCount > 0 ? (collaboratorCount === 1 ? collabNames : `${collaboratorCount} people`) : "people"}
+                </strong>
               </span>
             </div>
-            <div className="text-xs text-muted-foreground mt-2">Contributors can add content if permitted.</div>
+            {!canContribute && isCollaborator && (
+               <div className="text-xs text-muted-foreground mt-1">(You are in View Only mode)</div>
+            )}
           </div>
         )}
 
@@ -319,11 +318,11 @@ export function LockedCapsuleView({
               <UserPlus className="w-5 h-5" /> Contributions
             </h3>
 
-            {!contributorAllowed ? (
-              <div className="p-4 rounded-lg bg-muted/5 text-sm text-muted-foreground">
+            {!canContribute ? (
+              <div className="p-4 rounded-lg bg-muted/5 text-sm text-muted-foreground border border-dashed">
                 {isCollaborator ? (
                   <div>
-                    You are a collaborator but contributions are disabled for this capsule.
+                    You are listed as a Viewer. Only Editors can add content to this capsule.
                   </div>
                 ) : (
                   <div>You are not a collaborator on this capsule.</div>
