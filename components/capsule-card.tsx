@@ -5,10 +5,12 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
+import type { Collaborator } from "@/lib/capsule-storage"
 
 interface CapsuleCardProps {
   id: string
   title: string
+  description?: string
   unlockDate: Date
   createdDate: Date
   eventDate?: Date
@@ -18,7 +20,7 @@ interface CapsuleCardProps {
   tags?: string[]
   // optional sharing fields (new)
   shared?: boolean
-  collaborators?: string[]
+  collaborators?: (string | Collaborator)[]
   allowContributors?: boolean
   onDelete?: (id: string) => void
 }
@@ -26,6 +28,7 @@ interface CapsuleCardProps {
 export function CapsuleCard({
   id,
   title,
+  description,
   unlockDate,
   createdDate,
   eventDate,
@@ -43,15 +46,18 @@ export function CapsuleCard({
   const brandRed = "#f38283"
   const brandGreen = "#62cf91"
 
+  // Handle both string[] and Collaborator[] for backward compatibility
+  const collaboratorNames = collaborators.map(c => typeof c === 'string' ? c : c.email).join(", ")
+
   return (
-    <Link href={`/capsule/${id}`} className="relative block">
+    <Link href={`/capsule/${id}`} className="relative block h-full">
       {/* Note: to keep the exact content positions you had (preview image on top,
         overlays, then content block), we only enforce a fixed height on the Card root
         and make the card a column flex so the image remains at the top and the content
         area is constrained to the remaining space. Content that overflows will be hidden
         / truncated so all cards have the same dimensions without reordering elements.
       */}
-      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-120">
+      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-full min-h-[24rem]">
         {/* Delete Button */}
         {onDelete && (
           <button
@@ -75,12 +81,18 @@ export function CapsuleCard({
               src={previewImage}
               alt={title}
               fill
-              className="object-cover"
+              className={`object-cover transition duration-300 ${isLocked ? "blur-lg grayscale" : ""}`}
               unoptimized={previewImage.startsWith("data:") || previewImage.startsWith("blob:")}
             />
           ) : (
             <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20">
               <div className="text-6xl opacity-20">📦</div>
+            </div>
+          )}
+          {/* If locked, show a small 'Locked' overlay over the blurred image */}
+          {isLocked && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Lock className="w-10 h-10 text-blue-500 opacity-80" />
             </div>
           )}
 
@@ -89,7 +101,7 @@ export function CapsuleCard({
             <div className="absolute top-3 left-3 z-10">
               <div
                 className="p-2 rounded-full backdrop-blur-sm bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(10,10,10,0.6)] text-pink-600 dark:text-[var(--brand-green)] flex items-center gap-1"
-                title={collaborators.length > 0 ? `Shared with ${collaborators.join(", ")}` : "Shared"}
+                title={collaborators.length > 0 ? `Shared with: ${collaboratorNames}` : "Shared"}
               >
                 <UserPlus className="w-4 h-4" />
                 {collaborators.length > 0 && (
@@ -105,7 +117,7 @@ export function CapsuleCard({
               className={`p-2 rounded-full backdrop-blur-sm ${
                 isLocked
                   ? "bg-blue-100/90 text-blue-700 dark:bg-[rgba(243,130,131,0.15)] dark:text-[var(--brand-red)]"
-                  : "bg-green-100/90 text-green-700 dark:bg-[rgba(98,207,145,0.15)] dark:text-[var(--brand-green)]"
+                  : "bg-green-500/90 text-white dark:bg-green-600/90 dark:text-white"
               }`}
             >
               {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
@@ -133,9 +145,15 @@ export function CapsuleCard({
         {/* Card Content */}
         {/* make this the flex-1 area and hide overflow so card height remains fixed */}
         <div className="p-5 flex-1 overflow-hidden">
-          <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white line-clamp-2 group-hover:text-[var(--brand-red)] transition-colors">
+          <h3 className="font-semibold text-lg mb-1 text-gray-900 dark:text-white line-clamp-2 group-hover:text-[var(--brand-red)] transition-colors">
             {title}
           </h3>
+
+          {description && (
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2 leading-snug">
+              {description}
+            </p>
+          )}
 
           {/* Dates */}
           <div className="space-y-1 mb-3 text-sm text-gray-600 dark:text-gray-400">

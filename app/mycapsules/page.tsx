@@ -9,6 +9,7 @@ import { Plus } from "lucide-react"
 import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
 import { AdvancedSearchBar, type DateMode, type FilterStatus } from "@/components/advanced-search-bar"
+import Footer from "@/components/footer"
 
 export default function MyCapsulesPage() {
   const [capsules, setCapsules] = useState<Capsule[]>(() => CapsuleStorage.getAllCapsules())
@@ -54,7 +55,10 @@ export default function MyCapsulesPage() {
       const q = personQuery.toLowerCase()
       result = result.filter(c => {
         if (!c.collaborators || c.collaborators.length === 0) return false
-        return c.collaborators.some(col => col.toLowerCase().includes(q))
+        return c.collaborators.some(col => {
+            const email = typeof col === 'string' ? col : col.email
+            return email.toLowerCase().includes(q)
+        })
       })
     }
 
@@ -101,7 +105,7 @@ export default function MyCapsulesPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 min-w-0 p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex flex-col md:flex-row items-start justify-between gap-4">
             <div>
@@ -115,7 +119,6 @@ export default function MyCapsulesPage() {
             </Link>
           </div>
 
-          {/* Sticky Filter Bar */}
           <div className="sticky top-14 lg:top-6 z-30 mb-6 -mx-6 px-6 py-2 lg:mx-0 lg:px-0 lg:py-0">
             <div className="p-4 rounded-2xl backdrop-blur-md bg-background/90 border border-border shadow-sm">
                <AdvancedSearchBar 
@@ -163,6 +166,9 @@ export default function MyCapsulesPage() {
           )}
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

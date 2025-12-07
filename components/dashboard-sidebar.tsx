@@ -24,9 +24,8 @@ function SidebarContent() {
   const { logout } = useAuth()
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Theme Toggle */}
-      <div className="absolute top-6 left-6">
+    <div className="flex flex-col min-h-full w-full relative">
+      <div className="absolute top-6 left-6 z-10">
         <Button
           variant="ghost"
           size="icon"
@@ -39,7 +38,6 @@ function SidebarContent() {
         </Button>
       </div>
 
-      {/* Logo */}
       <div className="flex flex-col items-center justify-center mb-10 mt-6">
         <Image
           src="/capsumi-logo-color.PNG"
@@ -54,7 +52,6 @@ function SidebarContent() {
         </h1>
       </div>
 
-      {/* Navigation Links */}
       <nav className="flex flex-col gap-2 mt-4">
         {navItems.map((item) => {
           const Icon = item.icon
@@ -80,13 +77,11 @@ function SidebarContent() {
         })}
       </nav>
 
-      {/* Help Text and Logout */}
       <div className="mt-auto pt-6 flex flex-col items-center gap-3">
         <p className="text-xs text-center text-muted-foreground">
           💡 Navigate your memory capsules
         </p>
 
-        {/* Logout Button */}
         <Link href="/" className="w-full">
           <Button
             variant="outline"
@@ -107,26 +102,24 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  // Close sidebar when route changes
   useEffect(() => {
     setIsOpen(false)
   }, [pathname])
 
-  // Lock body scroll when mobile menu is open
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
     }
     return () => {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = ''
     }
   }, [isOpen])
 
   return (
     <>
-      {/* --- Mobile Top Bar (Visible ONLY on small screens) --- */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full">
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)} className="cursor-pointer">
           <Menu className="h-6 w-6 text-foreground" />
@@ -143,15 +136,12 @@ export function DashboardSidebar() {
           <span className="font-bold text-lg text-primary">Capsumi</span>
         </div>
         
-        {/* Placeholder to center the logo visually */}
         <div className="w-10" />
       </div>
 
-      {/* --- Mobile Drawer (Slide Over) --- */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -160,15 +150,14 @@ export function DashboardSidebar() {
               className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm"
             />
             
-            {/* Drawer Panel */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed top-0 left-0 bottom-0 w-64 bg-background z-[70] lg:hidden border-r shadow-2xl p-6"
+              className="fixed top-0 left-0 bottom-0 w-64 bg-background z-[70] lg:hidden border-r shadow-2xl p-6 overflow-y-auto"
             >
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 z-20">
                 <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="cursor-pointer">
                   <X className="h-5 w-5" />
                 </Button>
@@ -179,11 +168,10 @@ export function DashboardSidebar() {
         )}
       </AnimatePresence>
 
-      {/* --- Desktop Sidebar (Fixed, Visible ONLY on large screens) --- */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col fixed top-0 left-0 h-screen w-64 p-6 z-40 border-r backdrop-blur-xl shadow-lg transition-colors duration-300",
-          "bg-background/40 border-border"
+          "hidden lg:block fixed top-0 left-0 h-screen w-64 p-6 z-40 border-r backdrop-blur-xl shadow-lg transition-colors duration-300 overflow-y-auto",
+          "bg-background/95 border-border"
         )}
       >
         <SidebarContent />

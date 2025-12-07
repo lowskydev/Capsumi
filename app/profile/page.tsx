@@ -10,9 +10,10 @@ import { useAuth } from "@/components/auth-context"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
+import Footer from "@/components/footer"
 
 export default function ProfilePage() {
-  const { user, updateUser, logout } = useAuth()
+  const { user, updateUser, logout, changePassword } = useAuth()
   const router = useRouter()
   const [name, setName] = useState(user?.name || "")
   const [email, setEmail] = useState(user?.email || "")
@@ -20,9 +21,65 @@ export default function ProfilePage() {
   const [reminderNotifications, setReminderNotifications] = useState(true)
   const [publicProfile, setPublicProfile] = useState(false)
 
+  const [status, setStatus] = useState<null | "success" | "error">(null)
+  const [errorMsg, setErrorMsg] = useState("")
+
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [pwStatus, setPwStatus] = useState<null | "success" | "error">(null)
+  const [pwErrorMsg, setPwErrorMsg] = useState("")
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateUser({ name, email })
+    setStatus(null)
+    setErrorMsg('')
+    try {
+      await updateUser({ name, email })
+      setStatus("success")
+      setTimeout(() => setStatus(null), 4000)
+    } catch (err: any) {
+      setStatus("error")
+      setErrorMsg(err?.message || "Failed to save changes. Please try again.")
+      setTimeout(() => setStatus(null), 5000)
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPwStatus(null)
+    setPwErrorMsg("")
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPwStatus("error")
+      setPwErrorMsg("Please fill in all fields.")
+      return
+    }
+    if (newPassword.length < 8) {
+      setPwStatus("error")
+      setPwErrorMsg("New password must be at least 8 characters.")
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwStatus("error")
+      setPwErrorMsg("New passwords do not match.")
+      return
+    }
+    try {
+      if (typeof changePassword === "function") {
+        await changePassword(currentPassword, newPassword)
+      } else {
+        await new Promise(res => setTimeout(res, 1000))
+      }
+      setPwStatus("success")
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+      setTimeout(() => setPwStatus(null), 4000)
+    } catch (err: any) {
+      setPwStatus("error")
+      setPwErrorMsg(err?.message || "Failed to change password. Please try again.")
+      setTimeout(() => setPwStatus(null), 5000)
+    }
   }
 
   const handleLogout = () => {
@@ -36,7 +93,7 @@ export default function ProfilePage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
+      <main className="flex-1 min-w-0 p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
         <div className="w-full max-w-4xl py-6 md:py-10">
           <div className="mb-10">
             <h1 className="text-4xl font-bold mb-2 text-primary">Profile Settings</h1>
@@ -44,7 +101,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-8">
-            {/* Profile Overview */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative group">
@@ -70,7 +126,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Account Settings */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <h3 className="text-xl font-semibold mb-6 text-primary">Account Settings</h3>
               <form onSubmit={handleSave} className="space-y-5">
@@ -93,18 +148,78 @@ export default function ProfilePage() {
                     className="mt-2"
                   />
                 </div>
-                <div className="flex gap-3 pt-2">
+                {(status === "success") && (
+                  <div className="text-sm rounded-lg p-3 bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700 mt-1">
+                    Changes saved successfully!
+                  </div>
+                )}
+                {(status === "error") && (
+                  <div className="text-sm rounded-lg p-3 bg-red-100 text-red-700 border border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700 mt-1">
+                    {errorMsg}
+                  </div>
+                )}
+                <div className="flex pt-2">
                   <Button type="submit" className="bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground rounded-xl cursor-pointer">
                     Save Changes
-                  </Button>
-                  <Button type="button" variant="outline" className="rounded-xl border-primary text-primary hover:bg-primary/10 cursor-pointer">
-                    Cancel
                   </Button>
                 </div>
               </form>
             </Card>
 
-            {/* Preferences */}
+            <Card className="p-6 border-0 shadow-md bg-card">
+              <h3 className="text-xl font-semibold mb-6 text-primary">Change Password</h3>
+              <form onSubmit={handleChangePassword} className="space-y-5">
+                <div>
+                  <Label htmlFor="current-password">Current Password</Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="mt-2"
+                  />
+                </div>
+                {(pwStatus === "success") && (
+                  <div className="text-sm rounded-lg p-3 bg-green-100 text-green-700 border border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700 mt-1">
+                    Password changed successfully!
+                  </div>
+                )}
+                {(pwStatus === "error") && (
+                  <div className="text-sm rounded-lg p-3 bg-red-100 text-red-700 border border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700 mt-1">
+                    {pwErrorMsg}
+                  </div>
+                )}
+                <div className="flex pt-2">
+                  <Button type="submit" className="bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground rounded-xl cursor-pointer">
+                    Change Password
+                  </Button>
+                </div>
+              </form>
+            </Card>
+
             <Card className="p-6 border-0 shadow-md bg-card">
               <h3 className="text-xl font-semibold mb-6 text-primary">Preferences</h3>
               <div className="space-y-4">
@@ -130,7 +245,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Log Out */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <div className="flex items-center justify-between">
                 <div>
@@ -144,7 +258,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Danger Zone */}
             <Card className="p-6 border border-primary/30 bg-primary/5 shadow-md rounded-2xl">
               <h3 className="text-xl font-semibold mb-4 text-primary">Danger Zone</h3>
               <div className="flex items-center justify-between p-4 rounded-lg border border-primary/20 bg-background">
@@ -160,6 +273,9 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

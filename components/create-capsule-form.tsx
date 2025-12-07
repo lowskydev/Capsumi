@@ -9,12 +9,18 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus, Clock } from "lucide-react"
+import { Calendar, Upload, X, ImageIcon, FileText, Music, Plus, CheckCircle, UserPlus, Clock, Eye, Edit3 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { CapsuleStorage, type Capsule } from "@/lib/capsule-storage"
+import { CapsuleStorage, type Capsule, type Collaborator } from "@/lib/capsule-storage"
 import { useAuth } from "@/components/auth-context"
 import { DatePicker } from "@/components/date-picker"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function CreateCapsuleForm() {
   const router = useRouter()
@@ -34,9 +40,14 @@ export function CreateCapsuleForm() {
   const [unlockImmediately, setUnlockImmediately] = useState(false)
 
   // Sharing / collaborators state
-  const [sharedWith, setSharedWith] = useState<string[]>([])
-  const [currentShare, setCurrentShare] = useState("")
-  const [allowContributors, setAllowContributors] = useState(false)
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([])
+  const [currentShareInput, setCurrentShareInput] = useState("")
+  const [currentShareRole, setCurrentShareRole] = useState<"viewer" | "editor">("viewer")
+  
+  // Error state for sharing input
+  const [shareError, setShareError] = useState("")
+  // Error state for capsule meaningful content validation (NEW for problem 12)
+  const [capsuleError, setCapsuleError] = useState("")
 
   const handleAddTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -49,17 +60,34 @@ export function CreateCapsuleForm() {
     setTags(tags.filter((tag) => tag !== tagToRemove))
   }
 
-  const handleAddShare = () => {
-    const trimmed = currentShare.trim()
-    if (!trimmed) return
-    if (!sharedWith.includes(trimmed)) {
-      setSharedWith([...sharedWith, trimmed])
-      setCurrentShare("")
-    }
+  // Validation function for share inputs
+  function isValidEmailOrUsername(input: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const usernameRegex = /^@[A-Za-z0-9_]+$/
+    return emailRegex.test(input) || usernameRegex.test(input)
   }
 
-  const handleRemoveShare = (shareToRemove: string) => {
-    setSharedWith(sharedWith.filter((s) => s !== shareToRemove))
+  const handleAddCollaborator = () => {
+    const trimmed = currentShareInput.trim()
+    if (!trimmed) return
+
+    if (!isValidEmailOrUsername(trimmed)) {
+      setShareError("Enter a valid email address (alice@example.com) or username (start with '@').")
+      return
+    }
+
+    if (collaborators.some(c => c.email === trimmed)) {
+        setShareError("This person has already been added.")
+        return
+    }
+
+    setCollaborators([...collaborators, { email: trimmed, role: currentShareRole }])
+    setCurrentShareInput("")
+    setShareError("") // clear on success
+  }
+
+  const handleRemoveCollaborator = (emailToRemove: string) => {
+    setCollaborators(collaborators.filter((c) => c.email !== emailToRemove))
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +120,23 @@ export function CreateCapsuleForm() {
       alert("Please select an unlock date")
       return
     }
-    
+
+    // NEW REQUIRED FIELD VALIDATION FOR PROBLEM 12:
+    if (
+      !description.trim() &&
+      !textContent.trim() &&
+      images.length === 0 &&
+      audio === null &&
+      collaborators.length === 0
+    ) {
+      setCapsuleError(
+        "Please add at least one description, message, media (image/audio), or collaborator before creating the capsule."
+      )
+      return;
+    } else {
+      setCapsuleError("")
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -122,11 +166,7 @@ export function CreateCapsuleForm() {
 
       const isLocked = unlockImmediately ? false : (unlockDate && unlockDate > new Date())
 
-      const newCapsule: Capsule & {
-        shared?: boolean
-        collaborators?: string[]
-        allowContributors?: boolean
-      } = {
+      const newCapsule: Capsule = {
         id: `capsule_${Date.now()}`,
         title,
         description: description || undefined,
@@ -140,9 +180,10 @@ export function CreateCapsuleForm() {
         audioUrl,
         contentTypes: contentTypes as readonly ("text" | "image" | "audio")[],
         tags: tags.length > 0 ? tags : undefined,
-        shared: sharedWith.length > 0,
-        collaborators: sharedWith.length > 0 ? sharedWith : undefined,
-        allowContributors: sharedWith.length > 0 ? allowContributors : undefined,
+        shared: collaborators.length > 0,
+        collaborators: collaborators.length > 0 ? collaborators : undefined,
+        // Legacy support flag, derived from having at least one editor
+        allowContributors: collaborators.some(c => c.role === 'editor'),
       }
 
       CapsuleStorage.saveCapsule(newCapsule)
@@ -217,17 +258,17 @@ export function CreateCapsuleForm() {
             <div>
               <Label className="text-base flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                Event Happened Date
+                Event Date
               </Label>
               <div className="mt-2">
                 <DatePicker
                   date={eventDate}
                   onDateChange={setEventDate}
-                  placeholder="When did this memory happen?"
+                  placeholder="When does or did this event take place?"
                 />
               </div>
               <p className="text-sm text-muted-foreground mt-1.5">
-                Optional: The actual date of the memory/event
+                Optional: Specify when this memory or planned event takes/will take place
               </p>
             </div>
           </div>
@@ -300,73 +341,87 @@ export function CreateCapsuleForm() {
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Share this capsule with people. Those people will be able to add images/photos to the capsule.
+            Add people to your capsule. <strong>Collaborators</strong> can add photos and messages. <strong>Viewers</strong> can only see the content when it unlocks.
           </p>
 
-          <div className="flex gap-2 items-start">
-            <div className="flex-1 min-w-0">
-              <Label className="text-sm">Add people (email or username)</Label>
+          <div className="flex flex-col gap-4">
+            <div>
+              <Label className="text-sm">Add person</Label>
               <div className="flex gap-2 mt-2">
                 <Input
-                  value={currentShare}
-                  onChange={(e) => setCurrentShare(e.target.value)}
+                  value={currentShareInput}
+                  onChange={(e) => {
+                    setCurrentShareInput(e.target.value)
+                    setShareError("") // Clear error when typing
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault()
-                      handleAddShare()
+                      handleAddCollaborator()
                     }
                   }}
-                  placeholder="e.g. alice@example.com or @alice"
+                  placeholder="email@example.com or @username"
+                  className="flex-1"
                 />
-                <Button type="button" onClick={handleAddShare} variant="outline" className="cursor-pointer">
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-32 justify-between cursor-pointer">
+                      {currentShareRole === "editor" ? (
+                        <span className="flex items-center gap-2 text-primary font-medium"><Edit3 className="w-4 h-4" /> Editor</span>
+                      ) : (
+                        <span className="flex items-center gap-2 text-muted-foreground"><Eye className="w-4 h-4" /> Viewer</span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setCurrentShareRole("viewer")}>
+                      <Eye className="w-4 h-4 mr-2" /> Viewer
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCurrentShareRole("editor")}>
+                      <Edit3 className="w-4 h-4 mr-2" /> Collaborator
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button type="button" onClick={handleAddCollaborator} className="cursor-pointer">
                   Add
                 </Button>
               </div>
-
-              {sharedWith.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {sharedWith.map((s) => (
-                    <Badge key={s} variant="secondary" className="gap-1.5 pr-1.5">
-                      {s}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveShare(s)}
-                        className="hover:bg-background/50 rounded-full p-0.5 cursor-pointer"
-                        aria-label={`Remove ${s}`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
+              
+              {shareError && (
+                <div className="text-red-500 text-xs mt-1">{shareError}</div>
               )}
             </div>
 
-            <div className="w-56">
-              <Label className="text-sm">Permissions</Label>
-              <div className="mt-2 flex flex-col gap-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="permission"
-                    checked={!allowContributors}
-                    onChange={() => setAllowContributors(false)}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                  <span className="text-sm">View only</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="permission"
-                    checked={allowContributors}
-                    onChange={() => setAllowContributors(true)}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                  <span className="text-sm">Add people (can contribute)</span>
-                </label>
+            {collaborators.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {collaborators.map((c) => (
+                  <Badge 
+                    key={c.email} 
+                    variant={c.role === 'editor' ? "default" : "secondary"}
+                    className={`gap-1.5 pr-1.5 py-1 pl-2.5 ${
+                        c.role === 'editor' 
+                        ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" 
+                        : "bg-muted text-muted-foreground border-transparent"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                        {c.role === 'editor' ? <Edit3 className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        {c.email}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCollaborator(c.email)}
+                      className="ml-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 cursor-pointer"
+                      aria-label={`Remove ${c.email}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </Card>
@@ -484,6 +539,11 @@ export function CreateCapsuleForm() {
           )}
         </div>
       </Card>
+
+      {/* Capsule error message for empty content (PROBLEM 12) just above submit buttons */}
+      {capsuleError && (
+        <div className="text-red-500 text-sm text-center mb-4">{capsuleError}</div>
+      )}
 
       {/* Submit Buttons */}
       <div className="flex gap-4 justify-end">

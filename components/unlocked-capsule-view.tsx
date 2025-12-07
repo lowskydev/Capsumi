@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
-import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus, X, Clock } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { ImageIcon, FileText, Music, Calendar, Tag, UserPlus, X, Clock, Download } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import type { Collaborator } from "@/lib/capsule-storage"
 
 /** Redesigned version with an image lightbox & cleaner layout */
 export function UnlockedCapsuleView({
@@ -35,6 +36,18 @@ export function UnlockedCapsuleView({
 
   const openLightbox = (index: number) => setLightboxIndex(index)
   const closeLightbox = () => setLightboxIndex(null)
+
+  // Lock body scroll when lightbox is open to prevent background scrolling
+  useEffect(() => {
+    if (lightboxIndex !== null) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [lightboxIndex])
 
   return (
     <div className="space-y-6">
@@ -109,18 +122,20 @@ export function UnlockedCapsuleView({
       {/** --- SHARED WITH --- */}
       {shared && collaborators.length > 0 && (
         <Card className="p-4 rounded-2xl shadow-sm bg-muted/20">
-          <p className="text-sm text-muted-foreground">
-            Shared with{" "}
-            {collaborators.map((c: string, idx: number) => {
-              const display = c.includes("@") ? c : `@${c}`
+          <div className="text-sm text-muted-foreground">
+            <span className="font-semibold block mb-1">Shared with:</span>
+            {collaborators.map((c: string | Collaborator, idx: number) => {
+              const email = typeof c === 'string' ? c : c.email
+              const role = typeof c === 'object' ? ` (${c.role})` : ''
+              const display = email.includes("@") ? email : `@${email}`
               return (
-                <span key={c}>
-                  {display}
+                <span key={email}>
+                  {display}{role}
                   {idx < collaborators.length - 1 ? ", " : ""}
                 </span>
               )
             })}
-          </p>
+          </div>
         </Card>
       )}
 
@@ -170,7 +185,7 @@ export function UnlockedCapsuleView({
                   className="object-cover"
                   unoptimized={src.startsWith("data:") || src.startsWith("blob:")}
                 />
-                <div className="absolute bottom-0 right-0 m-2 bg-white/80 text-xs px-2 py-1 rounded z-10">
+                <div className="absolute bottom-0 right-0 m-2 bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full z-10">
                   #{index + 1}
                 </div>
               </motion.div>
@@ -207,7 +222,7 @@ export function UnlockedCapsuleView({
       <AnimatePresence>
         {lightboxIndex !== null && (
           <motion.div
-            className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -218,7 +233,7 @@ export function UnlockedCapsuleView({
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
             >
-              <div className="relative w-full h-full max-h-[80vh]">
+              <div className="relative w-full h-full max-h-[85vh]">
                 <Image
                   src={images[lightboxIndex]}
                   alt="Full screen preview"
@@ -228,20 +243,31 @@ export function UnlockedCapsuleView({
                 />
               </div>
 
-              <a
-                href={images[lightboxIndex]}
-                download
-                className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded text-sm shadow hover:bg-white z-20"
-              >
-                Download
-              </a>
+              {/* Grouped Controls in Top-Right Corner */}
+              <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
+                {/* Download Button */}
+                <a
+                  href={images[lightboxIndex]}
+                  download
+                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
+                             bg-black/40 text-white backdrop-blur-md border border-white/10
+                             hover:bg-black/60 hover:scale-105"
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Download</span>
+                </a>
 
-              <button
-                onClick={closeLightbox}
-                className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow z-20 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+                {/* Close Button */}
+                <button
+                  onClick={closeLightbox}
+                  className="p-2 rounded-full transition-all
+                             bg-black/40 text-white backdrop-blur-md border border-white/10
+                             hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-100 cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
             </motion.div>
           </motion.div>
         )}

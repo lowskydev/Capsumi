@@ -9,7 +9,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react"
 import { useAuth } from "@/components/auth-context"
 
 export default function LoginPage() {
@@ -18,15 +18,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
     try {
       await login(email, password)
       router.push("/dashboard")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error)
+      setError(error.message || "Failed to sign in")
     } finally {
       setIsLoading(false)
     }
@@ -36,7 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4 page-transition">
       <div className="w-full max-w-md">
         {/* Back Button */}
-        <Button variant="ghost" asChild className="mb-8 rounded-2xl">
+        <Button variant="ghost" asChild className="mb-8 rounded-2xl cursor-pointer">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
@@ -46,18 +49,25 @@ export default function LoginPage() {
         {/* Login Card */}
         <div className="bg-card rounded-3xl p-8 border border-border/50 hover-lift">
           {/* Logo */}
-            <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-8">
             <Image
-                src="/capsumi-logo-color.PNG"
-                alt="Capsumi"
-                width={64}
-                height={64}
-                className="object-contain"
+              src="/capsumi-logo-color.PNG"
+              alt="Capsumi"
+              width={64}
+              height={64}
+              className="object-contain"
             />
-            </div>
+          </div>
 
           <h1 className="text-3xl font-bold text-center mb-2">Welcome Back</h1>
           <p className="text-center text-muted-foreground mb-8">Sign in to access your memory capsules</p>
+
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-sm flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -91,7 +101,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full rounded-2xl h-12 text-base" disabled={isLoading}>
+            <Button type="submit" className="w-full rounded-2xl h-12 text-base cursor-pointer" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

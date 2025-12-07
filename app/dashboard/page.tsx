@@ -30,6 +30,7 @@ import {
 } from "chart.js"
 import { Line } from "react-chartjs-2"
 import "chartjs-adapter-date-fns"
+import Footer from "@/components/footer"
 
 ChartJS.register(
   CategoryScale,
@@ -105,7 +106,8 @@ export default function DashboardPage() {
   }, [capsules])
 
   const chartConfig = useMemo(() => {
-    const days = 30
+    // Increased range to 90 days to catch older activity
+    const days = 90
     const now = new Date()
     const labels: Date[] = []
     for (let i = days - 1; i >= 0; i--) {
@@ -176,7 +178,7 @@ export default function DashboardPage() {
       y: { 
         display: false,
         beginAtZero: true,
-        grace: '10%' // Add breathing room at the top of the chart
+        grace: '10%'
       },
     },
     plugins: { 
@@ -193,17 +195,15 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-4 lg:p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 p-4 lg:p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
           <div className="mb-6 lg:mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-primary">Dashboard</h1>
             <p className="text-muted-foreground text-base lg:text-lg">
-              Welcome back! Here's an overview of your capsules
+              Welcome back! Here&apos;s an overview of your capsules
             </p>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4 mb-6 lg:mb-8">
             <div className="rounded-2xl p-4 lg:p-6 border border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between mb-3 lg:mb-4">
@@ -246,12 +246,11 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Charts & Activity */}
           <div className="grid gap-6 md:grid-cols-3 mb-8">
             <div className="rounded-2xl p-4 lg:p-6 border border-border bg-card col-span-3 md:col-span-2">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Activity Trend
+                Activity Trend (Last 90 Days)
               </h3>
               <div className="h-56 lg:h-64 w-full overflow-hidden relative">
                 <Line data={chartConfig} options={chartOptions} />
@@ -295,7 +294,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Actions - Improved for Mobile */}
           <div className="rounded-2xl p-4 lg:p-6 border border-primary/10 bg-primary/5">
             <h3 className="text-lg font-semibold mb-4 text-primary">Quick Actions</h3>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -313,6 +311,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+      <div className="w-full p-6 lg:ml-64">
+        <Footer />
+      </div>
     </div>
   )
 }

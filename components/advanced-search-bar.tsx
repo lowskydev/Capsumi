@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Search, X, User, Calendar, Filter, ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,7 +22,7 @@ interface AdvancedSearchBarProps {
   onDateModeChange: (mode: DateMode) => void
   onDateRangeChange: (start: Date | undefined, end: Date | undefined) => void
   onStatusChange: (status: FilterStatus) => void
-  
+
   // Current values
   searchQuery: string
   personQuery: string
@@ -30,7 +30,7 @@ interface AdvancedSearchBarProps {
   startDate: Date | undefined
   endDate: Date | undefined
   status: FilterStatus
-  
+
   className?: string
 }
 
@@ -49,6 +49,8 @@ export function AdvancedSearchBar({
   className,
 }: AdvancedSearchBarProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  // Local input for person filter field
+  const [personInput, setPersonInput] = useState("")
 
   const dateModeLabels: Record<DateMode, string> = {
     unlockDate: "Unlock Date",
@@ -57,20 +59,25 @@ export function AdvancedSearchBar({
   }
 
   const activeFilterCount = [
-    personQuery,
+    Boolean(personQuery),
     startDate,
     endDate,
     status !== "all",
-    dateMode !== "unlockDate" // Assuming unlock is default
+    dateMode !== "unlockDate"
   ].filter(Boolean).length
 
   const clearAll = () => {
     onSearchChange("")
+    setPersonInput("")
     onPersonChange("")
     onDateModeChange("unlockDate")
     onDateRangeChange(undefined, undefined)
     onStatusChange("all")
   }
+
+  useEffect(() => {
+    setPersonInput("") // whenever personQuery changes externally, reset input
+  }, [personQuery])
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -89,6 +96,7 @@ export function AdvancedSearchBar({
             <button
               onClick={() => onSearchChange("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+              title="Clear search"
             >
               <X className="w-3 h-3" />
             </button>
@@ -99,8 +107,17 @@ export function AdvancedSearchBar({
         <div className="relative hidden md:block md:w-56 lg:w-64">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            value={personQuery}
-            onChange={(e) => onPersonChange(e.target.value)}
+            value={personInput}
+            onChange={e => setPersonInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                if (personInput.trim()) {
+                  onPersonChange(personInput.trim())
+                  setPersonInput("")
+                }
+              }
+            }}
             placeholder="Filter by person..."
             className="pl-9 rounded-xl border-pink-200 dark:border-gray-700 bg-white/80 dark:bg-black/40 backdrop-blur-sm"
           />
@@ -120,7 +137,7 @@ export function AdvancedSearchBar({
               <Filter className="w-4 h-4" />
               <span className="hidden md:inline">Filters</span>
               {activeFilterCount > 0 && (
-                <Badge variant="secondary" className="absolute -top-2 -right-2 md:static md:ml-1 h-5 min-w-5 px-1 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-[10px]">
+                <Badge variant="secondary" className="absolute -top-2 -right-2 md:static md:ml-1 h-5 min-w-5 px-1 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -146,8 +163,17 @@ export function AdvancedSearchBar({
                   <User className="w-3 h-3" /> Filter by Person
                 </label>
                 <Input
-                  value={personQuery}
-                  onChange={(e) => onPersonChange(e.target.value)}
+                  value={personInput}
+                  onChange={e => setPersonInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      if (personInput.trim()) {
+                        onPersonChange(personInput.trim())
+                        setPersonInput("")
+                      }
+                    }
+                  }}
                   placeholder="Name or email..."
                   className="h-9 text-sm"
                 />
@@ -228,25 +254,53 @@ export function AdvancedSearchBar({
           {status !== "all" && (
             <Badge variant="secondary" className="gap-1 pr-1 shrink-0">
               Status: {status}
-              <X className="w-3 h-3 cursor-pointer hover:text-primary" onClick={() => onStatusChange("all")} />
+              <button
+                type="button"
+                onClick={() => onStatusChange("all")}
+                title="Remove status filter"
+                className="ml-1 text-muted-foreground hover:text-primary p-0.5 rounded-full align-middle"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {dateMode !== "unlockDate" && (
             <Badge variant="secondary" className="gap-1 pr-1 shrink-0">
               By: {dateModeLabels[dateMode]}
-              <X className="w-3 h-3 cursor-pointer hover:text-primary" onClick={() => onDateModeChange("unlockDate")} />
+              <button
+                type="button"
+                onClick={() => onDateModeChange("unlockDate")}
+                title="Remove timeline filter"
+                className="ml-1 text-muted-foreground hover:text-primary p-0.5 rounded-full align-middle"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {personQuery && (
             <Badge variant="secondary" className="gap-1 pr-1 shrink-0">
               Person: {personQuery}
-              <X className="w-3 h-3 cursor-pointer hover:text-primary" onClick={() => onPersonChange("")} />
+              <button
+                type="button"
+                onClick={() => onPersonChange("")}
+                title="Remove person filter"
+                className="ml-1 text-muted-foreground hover:text-primary p-0.5 rounded-full align-middle"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {(startDate || endDate) && (
             <Badge variant="secondary" className="gap-1 pr-1 shrink-0">
               Date Range
-              <X className="w-3 h-3 cursor-pointer hover:text-primary" onClick={() => onDateRangeChange(undefined, undefined)} />
+              <button
+                type="button"
+                onClick={() => onDateRangeChange(undefined, undefined)}
+                title="Remove date range filter"
+                className="ml-1 text-muted-foreground hover:text-primary p-0.5 rounded-full align-middle"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
         </div>
