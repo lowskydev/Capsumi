@@ -1,10 +1,22 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Clock, Lock, Share2, Sparkles, ArrowRight, Check, ImageIcon, Music, FileText, Calendar } from "lucide-react"
 import Footer from "@/components/footer"
+import { CapsuleCard } from "@/components/capsule-card"
 
 export default function LandingPage() {
+  // Mock data for demonstration purposes
+  const demoLockedDate = new Date()
+  demoLockedDate.setDate(demoLockedDate.getDate() + 365) // 1 year from now
+
+  const demoUnlockedDate = new Date()
+  demoUnlockedDate.setDate(demoUnlockedDate.getDate() - 10) // 10 days ago
+
+  const demoCreatedDate = new Date()
+
   return (
     <div className="min-h-screen page-transition">
       {/* Navigation */}
@@ -55,6 +67,58 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* NEW: Visual Example Section */}
+      <section className="px-4 py-16 bg-muted/30">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">See It in Action</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              This is exactly what your capsules will look like. Securely locked until the date you choose, or ready to relive the moment.
+            </p>
+          </div>
+          
+          <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
+            {/* Example 1: Locked Capsule */}
+            <div className="w-full max-w-sm pointer-events-none select-none transform hover:scale-105 transition-transform duration-300">
+              <div className="text-center mb-4 text-sm font-medium text-primary uppercase tracking-wider">Locked State</div>
+              <CapsuleCard 
+                id="demo-1"
+                title="A Letter to My Future Self"
+                description="Open this in one year to see how far you've come!"
+                unlockDate={demoLockedDate}
+                createdDate={demoCreatedDate}
+                isLocked={true}
+                previewImage="/kids-surfing-ocean.jpg"
+                contentTypes={['text', 'image']}
+                tags={['motivation', 'future']}
+              />
+            </div>
+
+            {/* Arrow for visual flow (optional) */}
+            <div className="hidden md:block text-muted-foreground/30">
+              <ArrowRight className="w-12 h-12" />
+            </div>
+
+            {/* Example 2: Unlocked Capsule */}
+            <div className="w-full max-w-sm pointer-events-none select-none transform hover:scale-105 transition-transform duration-300">
+              <div className="text-center mb-4 text-sm font-medium text-secondary uppercase tracking-wider">Unlocked State</div>
+              <CapsuleCard 
+                id="demo-2"
+                title="Family Beach Vacation"
+                description="Best memories from our trip to the coast. The sunset was amazing!"
+                unlockDate={demoUnlockedDate}
+                createdDate={demoCreatedDate}
+                eventDate={demoUnlockedDate}
+                isLocked={false}
+                previewImage="/family-beach-sunset.jpg"
+                contentTypes={['image', 'audio']}
+                tags={['family', 'travel', 'summer']}
+              />
+            </div>
           </div>
         </div>
       </section>
