@@ -21,18 +21,15 @@ export default function ProfilePage() {
   const [reminderNotifications, setReminderNotifications] = useState(true)
   const [publicProfile, setPublicProfile] = useState(false)
 
-  // FEEDBACK STATE
   const [status, setStatus] = useState<null | "success" | "error">(null)
   const [errorMsg, setErrorMsg] = useState("")
 
-  // CHANGE PASSWORD STATES
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [pwStatus, setPwStatus] = useState<null | "success" | "error">(null)
   const [pwErrorMsg, setPwErrorMsg] = useState("")
 
-  // Handle profile save
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus(null)
@@ -48,12 +45,10 @@ export default function ProfilePage() {
     }
   }
 
-  // Handle password change
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setPwStatus(null)
     setPwErrorMsg("")
-    // Simple validation
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPwStatus("error")
       setPwErrorMsg("Please fill in all fields.")
@@ -69,12 +64,10 @@ export default function ProfilePage() {
       setPwErrorMsg("New passwords do not match.")
       return
     }
-    // Assume changePassword returns a promise; update with your own logic
     try {
       if (typeof changePassword === "function") {
         await changePassword(currentPassword, newPassword)
       } else {
-        // fallback mock, remove in production!
         await new Promise(res => setTimeout(res, 1000))
       }
       setPwStatus("success")
@@ -89,7 +82,6 @@ export default function ProfilePage() {
     }
   }
 
-  // Logout
   const handleLogout = () => {
     logout()
     router.push("/")
@@ -101,7 +93,7 @@ export default function ProfilePage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
+      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300 flex items-center justify-center">
         <div className="w-full max-w-4xl py-6 md:py-10">
           <div className="mb-10">
             <h1 className="text-4xl font-bold mb-2 text-primary">Profile Settings</h1>
@@ -109,7 +101,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-8">
-            {/* Profile Overview */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="relative group">
@@ -135,7 +126,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Account Settings */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <h3 className="text-xl font-semibold mb-6 text-primary">Account Settings</h3>
               <form onSubmit={handleSave} className="space-y-5">
@@ -176,7 +166,6 @@ export default function ProfilePage() {
               </form>
             </Card>
 
-            {/* Change Password */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <h3 className="text-xl font-semibold mb-6 text-primary">Change Password</h3>
               <form onSubmit={handleChangePassword} className="space-y-5">
@@ -231,7 +220,6 @@ export default function ProfilePage() {
               </form>
             </Card>
 
-            {/* Preferences */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <h3 className="text-xl font-semibold mb-6 text-primary">Preferences</h3>
               <div className="space-y-4">
@@ -257,7 +245,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Log Out */}
             <Card className="p-6 border-0 shadow-md bg-card">
               <div className="flex items-center justify-between">
                 <div>
@@ -271,7 +258,6 @@ export default function ProfilePage() {
               </div>
             </Card>
 
-            {/* Danger Zone */}
             <Card className="p-6 border border-primary/30 bg-primary/5 shadow-md rounded-2xl">
               <h3 className="text-xl font-semibold mb-4 text-primary">Danger Zone</h3>
               <div className="flex items-center justify-between p-4 rounded-lg border border-primary/20 bg-background">

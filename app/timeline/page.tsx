@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { Card } from "@/components/ui/card"
 import { TimelineItem } from "@/components/timeline-item"
@@ -17,7 +17,6 @@ export default function TimelinePage() {
     return () => window.removeEventListener("capsulesUpdated", handleUpdate)
   }, [])
 
-  // -- Advanced Search State --
   const [searchQuery, setSearchQuery] = useState("")
   const [personQuery, setPersonQuery] = useState("")
   const [dateMode, setDateMode] = useState<DateMode>("unlockDate")
@@ -27,11 +26,9 @@ export default function TimelinePage() {
 
   const now = useMemo(() => new Date(), [])
 
-  // Filter and Sort
   const filteredAndSortedCapsules = useMemo(() => {
     let result = [...capsules]
 
-    // 1. Filter by Status
     if (status === "locked") {
       result = result.filter(c => typeof c.isLocked === "boolean" ? c.isLocked : (new Date(c.unlockDate) > now))
     } else if (status === "unlocked") {
@@ -40,7 +37,6 @@ export default function TimelinePage() {
       result = result.filter(c => !!(c.shared || (Array.isArray(c.collaborators) && c.collaborators.length > 0)))
     }
 
-    // 2. Filter by Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(c => {
@@ -51,7 +47,6 @@ export default function TimelinePage() {
       })
     }
 
-    // 3. Filter by Person
     if (personQuery.trim()) {
       const q = personQuery.toLowerCase()
       result = result.filter(c => {
@@ -60,7 +55,6 @@ export default function TimelinePage() {
       })
     }
 
-    // 4. Filter by Date Range
     if (startDate || endDate) {
       result = result.filter(c => {
         let targetDate: Date | undefined
@@ -80,7 +74,6 @@ export default function TimelinePage() {
       })
     }
 
-    // 5. Sort
     result.sort((a, b) => {
       let dateA: number
       let dateB: number
@@ -108,7 +101,7 @@ export default function TimelinePage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-6xl mx-auto space-y-6">
           <header className="mb-4">
             <h1 className="text-3xl font-bold text-primary">Timeline</h1>
@@ -120,7 +113,6 @@ export default function TimelinePage() {
             </p>
           </header>
 
-          {/* Sticky Filter Bar */}
           <div className="sticky top-14 lg:top-6 z-30 mb-6 -mx-6 px-6 py-2 lg:mx-0 lg:px-0 lg:py-0">
             <div className="p-4 rounded-2xl backdrop-blur-md bg-white/90 dark:bg-[#0b0b0b]/90 border border-pink-100 dark:border-[rgba(98,207,145,0.12)] shadow-sm">
               <AdvancedSearchBar 

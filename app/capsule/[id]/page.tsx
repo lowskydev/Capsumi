@@ -65,9 +65,8 @@ export default function CapsuleDetailPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 w-full p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-5xl mx-auto py-6 md:py-10">
-          {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
             <div className="flex flex-col gap-3 flex-1 min-w-0">
               <h1 className="text-5xl font-extrabold leading-tight text-primary truncate">
@@ -118,7 +117,6 @@ export default function CapsuleDetailPage() {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 items-center">
               <ShareDialog capsuleId={capsule.id} capsuleTitle={capsule.title} />
               <Button
@@ -133,7 +131,6 @@ export default function CapsuleDetailPage() {
             </div>
           </div>
 
-          {/* Capsule Content */}
           <section className="rounded-3xl border border-primary/30 bg-card shadow-lg p-8 transition-all">
             {capsule.isLocked ? (
               <LockedCapsuleView
