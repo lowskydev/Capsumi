@@ -106,7 +106,8 @@ export default function DashboardPage() {
   }, [capsules])
 
   const chartConfig = useMemo(() => {
-    const days = 30
+    // Increased range to 90 days to catch older activity
+    const days = 90
     const now = new Date()
     const labels: Date[] = []
     for (let i = days - 1; i >= 0; i--) {
@@ -194,7 +195,7 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-background transition-colors duration-300">
       <DashboardSidebar />
 
-      <main className="flex-1 min-w-0 p-4 lg:p-6 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 p-4 lg:p-6 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 lg:mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-primary">Dashboard</h1>
@@ -249,7 +250,7 @@ export default function DashboardPage() {
             <div className="rounded-2xl p-4 lg:p-6 border border-border bg-card col-span-3 md:col-span-2">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Activity Trend
+                Activity Trend (Last 90 Days)
               </h3>
               <div className="h-56 lg:h-64 w-full overflow-hidden relative">
                 <Line data={chartConfig} options={chartOptions} />
