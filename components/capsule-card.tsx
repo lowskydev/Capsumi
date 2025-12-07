@@ -48,14 +48,14 @@ export function CapsuleCard({
   const collaboratorNames = collaborators.map(c => typeof c === 'string' ? c : c.email).join(", ")
 
   return (
-    <Link href={`/capsule/${id}`} className="relative block">
+    <Link href={`/capsule/${id}`} className="relative block h-full">
       {/* Note: to keep the exact content positions you had (preview image on top,
         overlays, then content block), we only enforce a fixed height on the Card root
         and make the card a column flex so the image remains at the top and the content
         area is constrained to the remaining space. Content that overflows will be hidden
         / truncated so all cards have the same dimensions without reordering elements.
       */}
-      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-120">
+      <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer rounded-2xl border border-pink-200 dark:border-[rgba(243,130,131,0.3)] bg-gradient-to-br from-pink-50 to-white dark:from-[#0e0e0e] dark:to-[#1a1a1a] p-0 flex flex-col h-full min-h-[24rem]">
         {/* Delete Button */}
         {onDelete && (
           <button
@@ -115,7 +115,7 @@ export function CapsuleCard({
               className={`p-2 rounded-full backdrop-blur-sm ${
                 isLocked
                   ? "bg-blue-100/90 text-blue-700 dark:bg-[rgba(243,130,131,0.15)] dark:text-[var(--brand-red)]"
-                  : "bg-green-100/90 text-green-700 dark:bg-[rgba(98,207,145,0.15)] dark:text-[var(--brand-green)]"
+                  : "bg-green-500/90 text-white dark:bg-green-600/90 dark:text-white"
               }`}
             >
               {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
