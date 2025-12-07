@@ -1,27 +1,25 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { Calendar, Lock, Unlock, ImageIcon, FileText, Music, ArrowRight, Clock } from "lucide-react"
+import { Lock, ImageIcon, FileText, Music, ArrowRight, Circle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import type { Capsule } from "@/lib/capsule-storage"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
 
 interface Props {
   capsule: Capsule
-  fixedHeightClass?: string
-  className?: string
+  index: number
+  isLast: boolean
 }
 
-export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className = "" }: Props) {
-  const createdDate = useMemo(() => (capsule.createdDate ? new Date(capsule.createdDate) : null), [capsule.createdDate])
+export function TimelineItem({ capsule, index, isLast }: Props) {
   const unlockDate = useMemo(() => (capsule.unlockDate ? new Date(capsule.unlockDate) : null), [capsule.unlockDate])
   const eventDate = useMemo(() => (capsule.eventDate ? new Date(capsule.eventDate) : null), [capsule.eventDate])
   const now = useMemo(() => new Date(), [])
-
-  const brandRed = "#f38283"
-  const brandGreen = "#62cf91"
 
   const isLocked =
     typeof capsule.isLocked === "boolean"
@@ -37,196 +35,146 @@ export function TimelineItem({ capsule, fixedHeightClass = "md:h-48", className 
   }, [unlockDate, now])
 
   const contentTypes = capsule.contentTypes ?? []
-  const tags = capsule.tags ?? []
+
+  // Even index = Left side (on desktop), Odd index = Right side
+  const isLeft = index % 2 === 0
 
   return (
-    <div
-      className={`relative pl-8 pt-12 group ${className} last:mb-0`}
-    >
-      {/* Timeline vertical line */}
-      <div
-        className="absolute left-[15px] -top-4 bottom-0 w-0.5 bg-gray-300 dark:bg-[rgba(98,207,145,0.12)] group-last:hidden"
-        aria-hidden="true"
-      />
-
-      {/* Timeline dot */}
-      <div
-        className={`absolute left-0 top-2 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center ${
-          isLocked
-            ? "bg-red-600 text-white dark:bg-red-500"
-            : "bg-green-600 text-white dark:bg-green-500"
-        }`}
-        aria-label={isLocked ? "Locked capsule" : "Unlocked capsule"}
-        role="img"
-      >
-        {isLocked ? <Lock className="w-3.5 h-3.5" aria-hidden="true" /> : <Unlock className="w-3.5 h-3.5" aria-hidden="true" />}
+    <div className={cn(
+      "relative flex md:justify-between items-center w-full mb-12 md:mb-24", // Increased spacing for grandeur
+      isLeft ? "md:flex-row" : "md:flex-row-reverse"
+    )}>
+      
+      {/* --- DESKTOP CENTER SPINE --- */}
+      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 h-full flex-col items-center justify-center">
+        {/* Animated Connection Line */}
+        {!isLast && (
+          <div className="absolute top-8 bottom-[-6rem] w-0.5 bg-gradient-to-b from-border via-border to-transparent z-0" />
+        )}
+        
+        {/* The Center Node */}
+        <motion.div 
+          initial={{ scale: 0 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, type: "spring" }}
+          className={cn(
+            "w-4 h-4 rounded-full border-4 z-10 shadow-sm transition-colors duration-500",
+            isLocked 
+              ? "bg-background border-red-400 dark:border-red-500" 
+              : "bg-green-500 border-green-200 dark:border-green-900"
+          )} 
+        />
       </div>
 
-      {/* Content Card */}
-      <div
-        className={`bg-card rounded-2xl border border-gray-300 shadow-sm overflow-hidden transition-all hover:shadow-md ${fixedHeightClass} dark:bg-[#0f0f0f] dark:border-[rgba(98,207,145,0.16)]`}
-        tabIndex={0}
-        role="region"
-        aria-labelledby={`capsule-title-${capsule.id}`}
+      {/* --- CONTENT CARD CONTAINER --- */}
+      <motion.div 
+        initial={{ opacity: 0, x: isLeft ? -50 : 50, y: 20 }}
+        whileInView={{ opacity: 1, x: 0, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
+        className={cn(
+          "w-full md:w-[45%] pl-8 md:pl-0 relative", 
+        )}
       >
-        <div className="flex flex-col md:flex-row h-full">
-          {/* Preview Image */}
-          {capsule.previewImage ? (
-            <div className="md:w-64 h-40 md:h-full flex-shrink-0 relative bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 overflow-hidden">
-              <Image
-                src={capsule.previewImage}
-                alt={capsule.title ?? "Capsule preview"}
-                fill
-                className={`object-cover transition duration-300 ${isLocked ? "blur-lg grayscale" : ""}`}
-                unoptimized={capsule.previewImage.startsWith("data:") || capsule.previewImage.startsWith("blob:")}
-              />
-              {isLocked && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <Lock className="w-10 h-10 text-red-500 opacity-80" />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="md:w-64 h-40 md:h-full flex-shrink-0 bg-muted/5 flex items-center justify-center">
-              <ImageIcon className="w-10 h-10 text-muted-foreground" />
-            </div>
+        
+        {/* Mobile: Vertical Line & Dot (Hidden on Desktop) */}
+        <div className="md:hidden absolute left-[11px] top-8 bottom-[-3rem] w-0.5 bg-border" />
+        <div className={cn(
+          "md:hidden absolute left-0 top-8 w-6 h-6 rounded-full border-2 bg-background flex items-center justify-center z-10",
+          isLocked ? "border-red-400" : "border-green-500"
+        )}>
+           <Circle className={cn("w-2 h-2 fill-current", isLocked ? "text-red-400" : "text-green-500")} />
+        </div>
+
+        {/* Date Label (Desktop Only - Floating) */}
+        <div className={cn(
+          "hidden md:block absolute top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground/60 tracking-wider uppercase",
+          isLeft ? "right-[-125%] text-left pl-8" : "left-[-125%] text-right pr-8"
+        )}>
+           {eventDate ? eventDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' }) : (unlockDate?.toLocaleDateString(undefined, { month: 'long', day: 'numeric' }))}
+        </div>
+
+        {/* The Card */}
+        <div
+          className={cn(
+            "relative bg-card rounded-2xl border shadow-sm overflow-hidden transition-all duration-300 group hover:shadow-xl hover:-translate-y-1",
+            isLocked ? "border-red-200/50 dark:border-red-900/30" : "border-green-200/50 dark:border-green-900/30"
           )}
-
-          {/* Content area */}
-          <div className="flex-1 p-4 md:p-6 min-h-0 flex flex-col">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h3
-                  id={`capsule-title-${capsule.id}`}
-                  className="font-semibold text-lg mb-1 text-balance truncate dark:text-[rgba(255,255,255,0.95)]"
-                >
-                  {capsule.title}
-                </h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground truncate dark:text-[rgba(255,255,255,0.75)]">
-                  {createdDate && (
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">Created {createdDate.toLocaleDateString()}</span>
+        >
+          {/* Card Header Image with Hover Zoom */}
+          <div className="h-40 w-full relative bg-muted overflow-hidden">
+             {capsule.previewImage ? (
+                <>
+                  <Image
+                    src={capsule.previewImage}
+                    alt="Preview"
+                    fill
+                    className={cn(
+                      "object-cover transition-transform duration-700 ease-in-out group-hover:scale-110",
+                      isLocked ? "blur-md grayscale scale-105" : ""
+                    )}
+                    unoptimized={capsule.previewImage.startsWith("data:")}
+                  />
+                  {isLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+                      <div className="bg-background/20 p-3 rounded-full backdrop-blur-md border border-white/20 shadow-lg">
+                        <Lock className="w-6 h-6 text-white" />
+                      </div>
                     </div>
                   )}
-                  {eventDate && (
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">Event {eventDate.toLocaleDateString()}</span>
-                    </div>
-                  )}
-                  {unlockDate && (
-                    <div className="flex items-center gap-1.5 font-medium truncate">
-                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                      {isLocked ? (
-                        <span className="truncate">Opens {unlockDate.toLocaleDateString()}</span>
-                      ) : (
-                        <span className="truncate">Opened on {unlockDate.toLocaleDateString()}</span>
-                      )}
-                    </div>
-                  )}
+                </>
+             ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted">
+                   {isLocked ? <Lock className="w-10 h-10 text-muted-foreground/20" /> : <ImageIcon className="w-10 h-10 text-muted-foreground/20" />}
                 </div>
-              </div>
+             )}
+             
+             {/* Floating Badge */}
+             <div className="absolute top-3 right-3">
+                {isLocked ? (
+                   <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-md border-0 shadow-lg font-medium">
+                      {daysUntilUnlock} days left
+                   </Badge>
+                ) : (
+                   <Badge variant="secondary" className="bg-green-500/90 text-white backdrop-blur-md border-0 shadow-lg font-medium">
+                      Unlocked
+                   </Badge>
+                )}
+             </div>
+          </div>
 
-              {/* Status badges */}
-              <div className="ml-3 flex-shrink-0 flex flex-col items-end gap-2">
-                {isLocked && daysUntilUnlock !== null && daysUntilUnlock > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="text-xs px-2 py-1"
-                    style={{
-                      background: brandGreen,
-                      color: "white",
-                      borderColor: brandGreen,
-                    }}
-                  >
-                    {daysUntilUnlock}d
-                  </Badge>
-                )}
-                {!isLocked && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs px-2 py-1"
-                    style={{
-                      background: brandGreen,
-                      color: "white",
-                      borderColor: brandGreen,
-                    }}
-                  >
-                    Unlocked
-                  </Badge>
-                )}
-                {isLocked && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs px-2 py-1 mt-1"
-                    style={{
-                      background: brandRed,
-                      color: "white",
-                      borderColor: brandRed,
-                    }}
-                  >
-                    Locked
-                  </Badge>
-                )}
-              </div>
+          {/* Card Content */}
+          <div className="p-5">
+            <div className="mb-3">
+              <h3 className="font-bold text-xl mb-1 line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+                {capsule.title}
+              </h3>
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed h-10">
+                 {capsule.description || "No description provided."}
+              </p>
             </div>
 
-            {/* Description */}
-            {capsule.description && (
-              <p className="text-muted-foreground mt-2 mb-3 line-clamp-3 text-sm overflow-hidden dark:text-[rgba(255,255,255,0.75)]">
-                {capsule.description}
-              </p>
-            )}
-
-            <div className="mt-auto flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  {contentTypes.includes("text") && (
-                    <div className="p-1.5 rounded-lg bg-muted">
-                      <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  {contentTypes.includes("image") && (
-                    <div className="p-1.5 rounded-lg bg-muted">
-                      <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  )}
-                  {contentTypes.includes("audio") && (
-                    <div className="p-1.5 rounded-lg bg-muted">
-                      <Music className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-
-                {tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs dark:border-[rgba(98,207,145,0.12)] dark:text-[var(--brand-green)]">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs dark:text-[var(--brand-green)]">
-                        +{tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link href={`/capsule/${capsule.id}`}>
-                  <Button variant="outline" className="gap-2 bg-transparent">
-                    View
-                    <ArrowRight className="w-4 h-4" />
+            <div className="flex items-center justify-between pt-3 border-t border-border/50">
+               <div className="flex gap-1.5">
+                  {contentTypes.map(t => (
+                     <div key={t} className="p-1.5 rounded-lg bg-secondary/10 text-secondary-foreground" title={t}>
+                        {t === 'image' && <ImageIcon className="w-3.5 h-3.5" />}
+                        {t === 'text' && <FileText className="w-3.5 h-3.5" />}
+                        {t === 'audio' && <Music className="w-3.5 h-3.5" />}
+                     </div>
+                  ))}
+               </div>
+               
+               <Link href={`/capsule/${capsule.id}`}>
+                  <Button size="sm" variant="ghost" className="h-8 px-3 text-xs font-semibold gap-1.5 rounded-full hover:bg-primary hover:text-primary-foreground transition-all group/btn">
+                     Open <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
                   </Button>
-                </Link>
-              </div>
+               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
