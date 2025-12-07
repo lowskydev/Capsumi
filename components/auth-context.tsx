@@ -30,7 +30,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const STORAGE_KEY = 'capsumi_user'
-const PASSWORD_KEY = 'capsumi_password'
+const USERS_DB_KEY = 'capsumi_users_db'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -49,6 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updatedUser = { ...user, stats }
     setUser(updatedUser)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
+  }
+
+  // Helper to access the user database from local storage
+  const getUsersDB = () => {
+    try {
+      const storedDB = localStorage.getItem(USERS_DB_KEY)
+      return storedDB ? JSON.parse(storedDB) : []
+    } catch (error) {
+      console.error("Error reading users DB", error)
+      return []
+    }
   }
 
   // Load user from localStorage on mount
@@ -108,18 +119,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     
+    const users = getUsersDB()
+    const foundUser = users.find((u: any) => u.email === email)
+
+    if (!foundUser) {
+        throw new Error("No account found with this email.")
+    }
+
+    if (foundUser.password !== password) {
+        throw new Error("Invalid password.")
+    }
+    
     // Get real stats from stored capsules
     const stats = getCurrentStats()
     
-    // Mock password save
-    localStorage.setItem(PASSWORD_KEY, password)
-    
     const userData: User = {
-      id: "1",
-      name: "Alex Morgan",
-      email,
-      avatar: "/diverse-user-avatars.png",
-      joinDate: new Date(),
+      id: foundUser.id,
+      name: foundUser.name,
+      email: foundUser.email,
+      avatar: foundUser.avatar || "/diverse-user-avatars.png",
+      joinDate: new Date(foundUser.joinDate),
       stats,
     }
     
@@ -131,15 +150,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     
-    // Mock password save
-    localStorage.setItem(PASSWORD_KEY, password)
+    const users = getUsersDB()
 
+    if (users.some((u: any) => u.email === email)) {
+        throw new Error("An account with this email already exists.")
+    }
+
+    const newUserEntry = {
+        id: `user_${Date.now()}`,
+        name,
+        email,
+        password, // In a real app, never store passwords as plain text!
+        avatar: "/diverse-user-avatars.png",
+        joinDate: new Date()
+    }
+
+    // Save to "Database"
+    users.push(newUserEntry)
+    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users))
+
+    // Set Active Session
     const userData: User = {
-      id: "1",
-      name,
-      email,
-      avatar: "/diverse-user-avatars.png",
-      joinDate: new Date(),
+      id: newUserEntry.id,
+      name: newUserEntry.name,
+      email: newUserEntry.email,
+      avatar: newUserEntry.avatar,
+      joinDate: newUserEntry.joinDate,
       stats: {
         totalCapsules: 0,
         lockedCapsules: 0,
@@ -157,29 +193,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updatedUser = { ...user, ...updates }
     setUser(updatedUser)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser))
+
+    // Also update in "DB"
+    const users = getUsersDB()
+    const idx = users.findIndex((u: any) => u.email === user.email)
+    if (idx !== -1) {
+        users[idx] = { ...users[idx], ...updates }
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(users))
+    }
   }
 
-  // Change password logic: Current version validates old password stored in localStorage
   const changePassword = async (currentPassword: string, newPassword: string) => {
-    // Simulate network/API latency
     await new Promise((resolve) => setTimeout(resolve, 800))
-    const storedPassword = localStorage.getItem(PASSWORD_KEY) || ""
-    if (!storedPassword) {
-      throw new Error("No existing password to compare.")
+    
+    if (!user) throw new Error("Not authenticated")
+
+    const users = getUsersDB()
+    const idx = users.findIndex((u: any) => u.email === user.email)
+
+    if (idx === -1) {
+        throw new Error("User record not found")
     }
-    if (currentPassword !== storedPassword) {
+
+    if (users[idx].password !== currentPassword) {
       throw new Error("Current password is incorrect.")
     }
-    // Save new password
-    localStorage.setItem(PASSWORD_KEY, newPassword)
-    // In a real app, call backend API and handle accordingly.
-    return
+    
+    // Update password
+    users[idx].password = newPassword
+    localStorage.setItem(USERS_DB_KEY, JSON.stringify(users))
   }
 
   const logout = () => {
     setUser(null)
     localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem(PASSWORD_KEY)
   }
 
   if (isLoading) {
